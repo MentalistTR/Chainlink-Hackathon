@@ -15,7 +15,7 @@ This project is a basic staking contract.
 ## Overview
 In this contract people can deposit theirs usdt and they can reward MTL token. 
 
-https://sepolia.etherscan.io/address/0xA30c2902e6fBD887f5F0F7B9130b17ed14Ff4994#code
+[https://sepolia.etherscan.io/address/0xA30c2902e6fBD887f5F0F7B9130b17ed14Ff4994#code](https://sepolia.etherscan.io/address/0x7de0708426358535524fe32e6601e0350ad32c00#code)
 
 ## Features
 
@@ -36,7 +36,7 @@ Follow these steps to set up the project locally and start participating in web3
 
 1- Clone the repository:
 
-git clone [https://github.com/MentalistTR/Paribu-Project](https://github.com/MentalistTR/Projects/tree/main/chainlinkProject)
+
 
 2- Navigate to the project directory: 
 - Open folder in Your Code Editor
@@ -47,6 +47,7 @@ git clone [https://github.com/MentalistTR/Paribu-Project](https://github.com/Men
 
 ## Testing 
 
+![Ekran Görüntüsü (36)](https://github.com/MentalistTR/Projects/assets/100069341/9bd8e7c3-c5db-4725-81d7-30ee1234bc52)
 
 
 
