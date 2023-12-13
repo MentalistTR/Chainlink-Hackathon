@@ -9,7 +9,6 @@ use sui::sui::SUI;
 use sui::object_table::{Self,ObjectTable};
 use sui::event;
 use sui::tx_context::{Self,TxContext};
-use sui::borrow;
 
 const NOT_THE_OWNER: u64 = 0;
 const INSUFFICIENT_FUNDS: u64 = 1;
@@ -93,12 +92,8 @@ public entry fun create_Car(
   
 ) {
     assert!(price >0, INVALID_VALUE);
-    let value = coin::value(&payment);
-    assert!(value == MIN_CAR_COST,INSUFFICIENT_FUNDS);
     transfer::public_transfer(payment,gallery.owner);
-
     gallery.counter = gallery.counter +1;
-
     let id = object::new(ctx);
    
     event::emit(
@@ -151,7 +146,6 @@ public entry fun update_car_property(
             for_sale: user_car.for_sale,
             price:user_car.price,
         }
-
     );
 }
 
@@ -192,20 +186,15 @@ public entry fun buy_car(
     payment: Coin<SUI>,
     ctx:&mut TxContext
 ) {
-
     let car = object_table::remove(&mut gallery.cars,car_id);
-    gallery.counter = gallery.counter -1;
-    
+
     assert!(car.for_sale,   CAR_FOR_NOT_SALE);
 
-    let payment_amount = coin::value(&payment);
-    assert!(payment_amount == car.price,INSUFFICIENT_FUNDS);
-
     let buyer = tx_context::sender(ctx);
+    let seller = car.owner;
     car.owner = buyer;
     car.for_sale = false;
 
-    let seller = car.owner;
     let car_id = object::uid_to_inner(&car.id);
     let car_price = car.price;
 
@@ -220,7 +209,6 @@ public entry fun buy_car(
             price: car_price,
         }
     );
-
 }
 
 public entry fun add_car_to_gallery(
@@ -240,12 +228,7 @@ public entry fun delete_car(
     ctx: &mut TxContext,
 
 ) {
-assert!(tx_context::sender(ctx) == car.owner,NOT_THE_OWNER);
-
-if(car.for_sale == true) {
-   gallery.counter = gallery.counter -1;
-};
-
+ assert!(tx_context::sender(ctx) == car.owner,NOT_THE_OWNER);
     event:: emit (
         CarDeleted {
             car_id: object::uid_to_inner(&car.id),
@@ -269,6 +252,20 @@ if(car.for_sale == true) {
 
  public fun get_car(gallery: &Gallery, car_id: u64): &Car {
     object_table::borrow(&gallery.cars, car_id)
+}
+
+public fun get_car_single(car:&Car) : (String, address, String, u64, Url, String, u64, bool, u64) {
+    (
+        car.name,
+        car.owner,
+        car.model,
+        car.year,
+        car.img_url,
+        car.color,
+        car.distance,
+        car.for_sale,
+        car.price,
+    )
 }
 
 #[test_only]
