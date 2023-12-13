@@ -1,6 +1,6 @@
 #[test_only]
 
-module final:: Final_Project_Test {
+module final::Final_Project_Test {
     use sui::test_scenario;
     use final::Final_Project::Gallery;
     use final::Final_Project::Car;
@@ -70,7 +70,7 @@ module final:: Final_Project_Test {
 
       
         // get_car_info function should return Car object variables. 
-       let (_asset_name, asset_owner, _asset_model, asset_year, _asset_img_url, _asset_color, asset_distance, asset_for_sale, asset_price) = fp::get_car_info(project, 0);
+       let (_asset_name, asset_owner, _asset_model, asset_year, _asset_img_url, _asset_color, asset_distance, asset_for_sale, asset_price) = fp::get_car_info(project,1);
       
        assert!(asset_owner == user1,0);
        assert!(asset_year ==year ,4);
@@ -90,27 +90,35 @@ module final:: Final_Project_Test {
         let payment1 = mint_for_testing<SUI>(100, test_scenario::ctx(scenario));
         
         //user2 going to buy car from user1.
-        fp::buy_car(project, 0, payment1, test_scenario::ctx(scenario));
+        fp::buy_car(project, 1, payment1, test_scenario::ctx(scenario));
     
         // Gallery counter must be decrease so it was 1 and now it must be 0
-        assert!(fp::get_counter(project) == 0, 4);
+        assert!(fp::get_counter(project) == 1, 4);
         
-        //after user2 called buy_car function we call the get_car_info so we can check new infos.
-        let (_asset_name, asset_owner, _asset_model, _asset_year, _asset_img_url, _asset_color, _asset_distance, asset_for_sale, _asset_price) = fp::get_car_info(project, 0);
-       
-          //owner must be change. 
-          assert!(asset_owner == user2,0);
-          // after car sold asset_for_sale must be false.
-          assert!(asset_for_sale == false,3);
-   
+ 
         test_scenario::return_shared(project_val);
 
        };
 
-   test_scenario::next_tx(scenario,user2);
+       test_scenario::next_tx(scenario,user2); 
+       {
+           //after user2 called buy_car function we call the get_car_info so we can check new infos.
+        let car_val = test_scenario::take_from_sender<fp::Car>(scenario); 
+        let car = &mut car_val;
+
+        let (_asset_name, asset_owner, _asset_model, _asset_year, _asset_img_url, _asset_color, _asset_distance, asset_for_sale, _asset_price) = fp::get_car_single(car);
+       
+         // owner must be change. 
+          assert!(asset_owner == user2,0);
+        //  after car sold asset_for_sale must be false.
+          assert!(asset_for_sale == false,3);
+        
+        test_scenario::return_to_sender<fp::Car>(scenario,car_val);
+       };
+
+      test_scenario::next_tx(scenario,user2);
 
       {
-
       //user2 lives in Turkey and he thinks he can make profit in car trade. So he is going to change car price 
       
       let car_val = test_scenario::take_from_sender<fp::Car>(scenario); 
@@ -124,25 +132,16 @@ module final:: Final_Project_Test {
       let new_for_sale: bool = true;
       let new_price:u64 = 15;
       let user_address =  user2;
-
+    
       //  user2 updated his own car
     
       fp:: update_car_property(car,new_year,new_distance,new_for_sale,new_price,user_address);
       test_scenario::return_to_sender<fp::Car>(scenario,car_val);
-    
-   //   user2 called his car property
-      let (_asset_name, asset_owner, _asset_model, _asset_year, _asset_img_url, _asset_color, _asset_distance, asset_for_sale, _asset_price) = fp::get_car_info(project, 0);
-
-       assert!(asset_owner == user2,0);
-       assert!(asset_for_sale == true,3);
-       assert!(new_distance ==_asset_distance,4);
-       assert!(_asset_price == new_price,4);
-
-       
-        test_scenario::return_shared(project_val);
+  
+       test_scenario::return_shared(project_val);
          };
 
-   test_scenario::next_tx(scenario,user2);
+       test_scenario::next_tx(scenario,user2);
 
      {
       // user2 updated new prices and now he has to add this object to gallery. 
@@ -153,15 +152,28 @@ module final:: Final_Project_Test {
       let new_car_val = test_scenario::take_from_sender<fp::Car>(scenario); 
      
       fp::add_car_to_gallery(project, new_car_val, test_scenario::ctx(scenario));
-       
-       // counter must be 1 now. 
-       assert!(fp::get_counter(project) == 1, 4);
+      assert!(fp::get_counter(project) == 2, 4);
+
+     
+       let new_year : u64 = 1998;
+       let new_distance: u64 = 600100;
+       let new_for_sale: bool = true;
+       let new_price:u64 = 15;
+       let user_address =  user2;
+
+       // user2 check car property
+       let (_asset_name, asset_owner, _asset_model, _asset_year, _asset_img_url, _asset_color, _asset_distance, asset_for_sale, _asset_price) = fp::get_car_info(project, 2);
+
+       assert!(asset_owner == user2,0);
+       assert!(asset_for_sale == true,3);
+       assert!(new_distance ==_asset_distance,4);
+       assert!(_asset_price == new_price,4);
 
        test_scenario::return_shared(project_val);
 
         };
 
-   test_scenario::next_tx(scenario,user1); 
+      test_scenario::next_tx(scenario,user1); 
 
        {
        
@@ -170,18 +182,10 @@ module final:: Final_Project_Test {
     let payment1 = mint_for_testing<SUI>(100, test_scenario::ctx(scenario));
     
      //user1 going to buy car from user1.
-     fp::buy_car(project, 0, payment1, test_scenario::ctx(scenario));
+     fp::buy_car(project, 2, payment1, test_scenario::ctx(scenario));
 
      // Gallery counter must be decrease so it was 1 and now it must be 0
-     assert!(fp::get_counter(project) == 0, 4);
-    
-    //after user1 called buy_car function we call the get_car_info so we can check new info.
-     let (_asset_name, asset_owner, _asset_model, _asset_year, _asset_img_url, _asset_color, _asset_distance, asset_for_sale, _asset_price) = fp::get_car_info(project, 0);
-       
-       //owner must be change. 
-       assert!(asset_owner == user1,0);
-       // after car sold asset_for_sale must be false.
-       assert!(asset_for_sale == false,3);
+     assert!(fp::get_counter(project) == 2, 4);
 
      test_scenario::return_shared(project_val);
        
@@ -197,7 +201,7 @@ module final:: Final_Project_Test {
         let new_car_val = test_scenario::take_from_sender<fp::Car>(scenario); 
 
         fp::delete_car(new_car_val,project,test_scenario::ctx(scenario));
-        assert!(fp::get_counter(project) == 0,4);
+        assert!(fp::get_counter(project) == 2,4);
 
         test_scenario::return_shared(project_val);
        };
