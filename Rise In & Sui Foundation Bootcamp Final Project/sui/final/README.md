@@ -12,7 +12,7 @@ Project deployed on Sui Testnet >> https://suiexplorer.com/object/0x5c0e46a24e39
 
 1- Clone the repository:
 
-git clone https://github.com/MentalistTR/Paribu-Project
+git clone Rise In & Sui Foundation Bootcamp Final Project/sui/final
 
 2- Navigate to the project directory: 
 - Open folder in Your Code Editor
