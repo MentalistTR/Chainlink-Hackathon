@@ -12,7 +12,7 @@ Project deployed on Sui Testnet >> https://suiexplorer.com/object/0x5c0e46a24e39
 
 1- Clone the repository:
 
-git clone Rise In & Sui Foundation Bootcamp Final Project/sui/final
+git clone [Rise In & Sui Foundation Bootcamp Final Project/sui/final](https://github.com/MentalistTR/Projects/tree/main/Rise%20In%20%26%20Sui%20Foundation%20Bootcamp%20Final%20Project/sui/final)
 
 2- Navigate to the project directory: 
 - Open folder in Your Code Editor
