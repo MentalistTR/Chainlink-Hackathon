@@ -242,6 +242,11 @@ public entry fun delete_car(
     object::delete(id);
 }
 
+#[test_only]
+  public fun init_for_testing(ctx: &mut TxContext) {
+    init(ctx); 
+}
+
  public fun  get_owner(gallery: &Gallery): address {
     gallery.owner
 }
@@ -266,11 +271,6 @@ public fun get_car_single(car:&Car) : (String, address, String, u64, Url, String
         car.for_sale,
         car.price,
     )
-}
-
-#[test_only]
-  public fun init_for_testing(ctx: &mut TxContext) {
-    init(ctx); 
 }
 
 }
