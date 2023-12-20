@@ -58,7 +58,6 @@ struct FundDistributed has copy,drop {
 
 fun init(ctx:&mut TxContext) {
 
-
 transfer::share_object(
     Fund_Balances{
         id:object::new(ctx),
