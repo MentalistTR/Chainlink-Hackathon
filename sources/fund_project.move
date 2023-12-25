@@ -17,12 +17,12 @@ use std::debug;
 
 const ERROR_INVALID_ARRAY_LENGTH: u64 = 0;
 const ERROR_INVALID_PERCENTAGE_SUM: u64 = 1;
+const ERROR_INVALID_VALUE:u64 = 2;
 
 // share object
 struct Fund_Balances has key {
     id:UID,
     total_fund: Balance<SUI>,
-    balances:Table<address,u64>, 
 }
 
 // only admin  
@@ -43,12 +43,6 @@ struct ShareHoldersNew has drop {
     share_percentage: u64,
 }
 
-// event 
-struct Receipt has key {
-    id: UID,
-    deposit_amount: u64,    
-}
-
    // =================== Initializer ===================
 
 fun init(ctx:&mut TxContext) {
@@ -57,7 +51,6 @@ transfer::share_object(
     Fund_Balances{
         id:object::new(ctx),
         total_fund:balance::zero(),
-        balances:table::new(ctx),
     },
 );
 
@@ -65,8 +58,6 @@ transfer::share_object(
     ShareHolders{
         id:object::new(ctx),
         shareholders:table::new(ctx),
-       // reel_allowance:0,
-       // admin_allowance:0,
         used_allowance:table::new(ctx),
         old_shareholders:vector::empty(),
     },
@@ -78,24 +69,10 @@ transfer::share_object(
 }
  // users can deposit fund to Fund_Balances share object. 
 
-public entry fun deposit_fund(storage: &mut Fund_Balances,holders:&mut ShareHolders, amount:Coin<SUI>,ctx:&mut TxContext) {
-    let caller_address = tx_context::sender(ctx);
-    let deposit_amount = coin::value(&amount);
-
-    // add SUI into the fund balance 
+public entry fun deposit_fund(storage: &mut Fund_Balances, amount:Coin<SUI>, ctx:&mut TxContext) {
     let coin_balance: Balance<SUI> = coin::into_balance(amount);
     balance::join(&mut storage.total_fund, coin_balance);
-
-     // increase sender donated amount in table
-    increase_account_balance(storage,caller_address, deposit_amount);
-
-    // create a Receipt for proof 
-   let receipt: Receipt = Receipt {
-        id:object:: new(ctx),
-        deposit_amount,
-      };
-
-    transfer::transfer(receipt, tx_context::sender(ctx)); 
+    
 }
 
 // public entry fun user_withdraw(storage: &mut Fund_Balances,holders: &mut ShareHolders,amount:Coin<SUI>,ctx:&mut TxContext) {
@@ -109,11 +86,21 @@ public entry fun deposit_fund(storage: &mut Fund_Balances,holders:&mut ShareHold
 //      let target_amount = ((total_fund) / (get_shareholders_length(holders))) * (allowance / 100);
 //      let withdraw_amount = coin::value(&amount);
 
-//     / let raised: Coin<SUI> = coin::take(&mut storage.total_fund, withdraw_amount, ctx);
+//      let raised: Coin<SUI> = coin::take(&mut storage.total_fund, withdraw_amount, ctx);
 
 //       transfer::public_transfer(raised, tx_context::sender(ctx));
 
 // }
+
+public fun admin_withdraw(_:&AdminCap, fund: &mut Fund_Balances,amount:u64, ctx:&mut TxContext) { 
+    // check the input amount <= fund_balances
+     let withdraw_amount = amount;
+     let fund_balance_value = balance::value(&fund.total_fund);
+     assert!(withdraw_amount <= fund_balance_value ,ERROR_INVALID_VALUE);
+
+    let withdraw: Coin<SUI> = coin::take(&mut fund.total_fund, amount, ctx);
+    transfer::public_transfer(withdraw, tx_context::sender(ctx));
+}
 
 fun fund_distribution(_:&AdminCap) {
 
@@ -160,15 +147,15 @@ fun get_shareholders_length(receipt:&ShareHolders): u64 {
 }
 
   // update users deposit_amount in Table 
-fun increase_account_balance(storage: &mut Fund_Balances, recipient: address, amount:u64) {
+// fun increase_account_balance(storage: &mut Fund_Balances, recipient: address, amount:u64) {
 
-      if(table::contains(&storage.balances, recipient)) {
-          let existing_balance = table::remove(&mut storage.balances, recipient);
-          table::add(&mut storage.balances, recipient, existing_balance +amount);
-      } else {
-          table::add(&mut storage.balances, recipient, amount); 
-      };
-  }
+//       if(table::contains(&storage.balances, recipient)) {
+//           let existing_balance = table::remove(&mut storage.balances, recipient);
+//           table::add(&mut storage.balances, recipient, existing_balance +amount);
+//       } else {
+//           table::add(&mut storage.balances, recipient, amount); 
+//       };
+//   }
 
 #[test_only]
     public fun init_for_testing(ctx: &mut TxContext) {
@@ -183,4 +170,10 @@ fun increase_account_balance(storage: &mut Fund_Balances, recipient: address, am
            let share_percentage_ref= table::borrow(&sh.shareholders,recipient);
            *share_percentage_ref
     }
+    // return total_fund value as a u64
+    public fun return_total_fund(fund: &Fund_Balances): u64 {
+        balance::value(&fund.total_fund)
+        //debug::print(&x);
+}
+
 }
