@@ -92,13 +92,9 @@ public entry fun deposit_fund(storage: &mut Fund_Balances, amount:Coin<SUI>, ctx
 
 // }
 
-public fun admin_withdraw(_:&AdminCap, fund: &mut Fund_Balances,amount:u64, ctx:&mut TxContext) { 
+public fun admin_withdraw(_:&AdminCap, fund: &mut Fund_Balances,withdraw_amount:u64, ctx:&mut TxContext) { 
     // check the input amount <= fund_balances
-     let withdraw_amount = amount;
-     let fund_balance_value = balance::value(&fund.total_fund);
-     assert!(withdraw_amount <= fund_balance_value ,ERROR_INVALID_VALUE);
-
-    let withdraw: Coin<SUI> = coin::take(&mut fund.total_fund, amount, ctx);
+    let withdraw: Coin<SUI> = coin::take(&mut fund.total_fund, withdraw_amount, ctx);
     transfer::public_transfer(withdraw, tx_context::sender(ctx));
 }
 
