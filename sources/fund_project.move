@@ -30,7 +30,7 @@ const ERROR_SHARE_ALREADY_CREATED:u64 = 5;
 struct Fund_Balances has key, store {
     id:UID,
     total_fund: Bag,
-    coin_names: vector<String>
+    coin_names: vector<String>,
 }
 
 // only admin  
@@ -43,7 +43,7 @@ struct AdminCap has key {
 struct ShareHolders has key {
     id:UID,
     shareholders_percentage: Table<address, u64>, // shareholders allowance percentage of the  distrubution amount 
-    shareholders_amount: Bag,    // shareholders total withdraw amount 
+    shareholders_amount: Table<address, Bag>,    // shareholders total withdraw amount 
     old_shareholders:vector<address>,
 }
 // object for add shareholer
@@ -62,25 +62,21 @@ fun init(ctx:&mut TxContext) {
             coin_names:vector::empty<String>(),
          },
      );
+     
+    transfer::share_object(
+        ShareHolders {
+            id:object::new(ctx),
+            shareholders_percentage:table::new(ctx),
+            shareholders_amount:table::new(ctx),
+            old_shareholders:vector::empty(),
+        },
+    );
    // Admin capability object for the stable coin
    transfer::transfer(AdminCap 
  { id: object::new(ctx), shareholders_created:false}, tx_context::sender(ctx) );
 
 }
-  // Admin creates share objects 
-public fun create_share_objects(admincap:&mut AdminCap, ctx:&mut TxContext) {
-    assert!(admincap.shareholders_created == false, ERROR_SHARE_ALREADY_CREATED);
-    admincap.shareholders_created = true;
 
-    transfer::share_object(
-        ShareHolders {
-            id:object::new(ctx),
-            shareholders_percentage:table::new(ctx),
-            shareholders_amount:bag::new(ctx),
-            old_shareholders:vector::empty(),
-        },
-    );
-}
  // users can deposit fund to Fund_Balances share object. 
 public fun deposit_to_bag<T>(bag: &mut Fund_Balances, coin:Coin<T>, coin_metadata: &CoinMetadata<T>) {
     let balance = coin::into_balance(coin);
@@ -95,7 +91,6 @@ public fun deposit_to_bag<T>(bag: &mut Fund_Balances, coin:Coin<T>, coin_metadat
         // if it is not lets add it.
     else { 
          vector::push_back(&mut bag.coin_names, name);
-         debug::print(&bag.coin_names);
          bag::add(&mut bag.total_fund, name, balance);
     }
 }
@@ -113,7 +108,6 @@ public fun deposit_to_bag_sui(bag: &mut Fund_Balances, coin:Coin<SUI>) {
     }
          else { 
              vector::push_back(&mut bag.coin_names, name_string);
-             debug::print(&bag.coin_names);
              bag::add(&mut bag.total_fund, name_string, balance);
     }
     
@@ -142,40 +136,42 @@ public fun deposit_to_bag_sui(bag: &mut Fund_Balances, coin:Coin<SUI>) {
 // }
 
    // calculate shareholder_withdraw_amount and add table it
-public fun fund_distribution<T>(_:&AdminCap, fund:&mut Fund_Balances, shareholder:&mut ShareHolders, distribution_amount: u64) {
+public fun fund_distribution<T>(_:&AdminCap, fund:&mut Fund_Balances, shareholder:&mut ShareHolders, distribution_amount: u64, coin_name: String, ctx:&mut TxContext) {
     let shareholder_vector_len: u64 = vector::length(&shareholder.old_shareholders);
-    let coin_names_length : u64 = vector::length(&fund.coin_names);
-
-    let i: u64 = 0;  
     let j: u64 = 0;
-    while(i < coin_names_length) { 
+    let i : u64 = 0;
+
          while (j < shareholder_vector_len) {
-             let coin_name: &String = vector::borrow(& fund.coin_names, i);
-      
-             // take address from oldshareholder vector
-             let share_holder_address = vector::borrow(&shareholder.old_shareholders, i);
+            // take address from oldshareholder vector
+            let share_holder_address = vector::borrow(&shareholder.old_shareholders, j);
+            
+                if (!table::contains(&shareholder.shareholders_amount, *share_holder_address)) {
+                    let bag = bag::new(ctx);
+                    table::add(&mut shareholder.shareholders_amount,*share_holder_address,bag);
+             }; 
              // take share_holder percentage from table
              let share_holder_percentage = table::borrow(&shareholder.shareholders_percentage, *share_holder_address);
              // calculate shareholder withdraw tokens
              let share_holder_withdraw_amount =  (distribution_amount * *share_holder_percentage ) / 10000 ;
              // Calculate the total fund of that coin type in the bag
-             let total_coin_value = bag::borrow_mut<String, Balance<T>>(&mut fund.total_fund, *coin_name);
+             let shareholder_bag = table::borrow_mut<address, Bag>(&mut shareholder.shareholders_amount, *share_holder_address);
+             // let define shareholder Bag
+             let total_coin_value = bag::borrow_mut<String, Balance<T>>(&mut fund.total_fund, coin_name);
              // calculate the distribute coin value to shareholder 
+            
              let withdraw_coin = balance::split<T>( total_coin_value, share_holder_withdraw_amount);
             // add to share_holder amount
-                if(bag::contains(&shareholder.shareholders_amount, *coin_name) == true) { 
-                    let coin_value = bag::borrow_mut(&mut shareholder.shareholders_amount, *coin_name);
-
+                 if(bag::contains(shareholder_bag, coin_name) == true) { 
+                    let coin_value = bag::borrow_mut( shareholder_bag, coin_name);
                     balance::join(coin_value, withdraw_coin);
                 }
                  else { 
-                    bag::add(&mut shareholder.shareholders_amount, *coin_name, withdraw_coin);
+                    bag::add(shareholder_bag, coin_name, withdraw_coin);
                  };
-                          j = j + 1;
-                 };
-                          i = i + 1;
+                     j = j + 1;       
+                };                     
     }
-}
+
 
     // admin add or remove shareholders from contract
 public fun set_shareholders(_: &AdminCap, receipt:&mut ShareHolders, shareholder:vector<ShareHoldersNew>) {
@@ -232,11 +228,13 @@ fun get_shareholders_length(receipt:&ShareHolders): u64 {
          let name_string = string::utf8(name);
             bag::borrow(&bag.total_fund, name_string)
     }
-    // return shareholder allowance withdraw amount 
-//      public fun return_shareholder_allowance_amount<T>(sh:&ShareHolders<T>, recipient:address): u64  {
-//            let share_percentage_ref = table::borrow(&sh.shareholders_amount, recipient);
-//            balance::value(share_percentage_ref)
-//     }
+   //return shareholder allowance withdraw amount 
+
+     public fun return_shareholder_allowance_amount<T>(shareholder:&ShareHolders, token_name:String, holder:address): u64  {
+           let shareholder_bag = table::borrow<address, Bag>(&shareholder.shareholders_amount, holder);
+           let shareholder_allowance = bag::borrow<String, Balance<T>>(shareholder_bag, token_name );
+           balance::value<T>(shareholder_allowance)
+    }
 //     // return total_fund value as a u64
 //     public fun return_total_fund<T>(fund: &Fund_Balances<T>): u64 {
 //         balance::value(&fund.total_fund) 
