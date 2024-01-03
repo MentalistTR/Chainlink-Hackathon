@@ -113,27 +113,29 @@ public fun deposit_to_bag_sui(bag: &mut Fund_Balances, coin:Coin<SUI>) {
     
 }
 
-// public fun shareholder_withdraw<T>(shareholders: &mut ShareHolders<T>, amount:u64, ctx:&mut TxContext) {
-//     let sender = tx_context::sender(ctx);
-//     // firstly, check >  Is sender shareholder? 
-//       assert!(
-//        table::contains(&shareholders.shareholders_amount, sender),
-//         ERROR_YOU_ARE_NOT_SHAREHOLDER   
-//      );
-//       // let take address from table
-//       let share_holder_balances = table::borrow_mut(&mut shareholders.shareholders_amount, sender);
-//       //decrease balance in table 
-//       let withdraw = coin::take(share_holder_balances , amount, ctx);
-//       // send fund to sender 
-//       transfer::public_transfer(withdraw, sender);       
-// }
+public fun shareholder_withdraw<T>(shareholders: &mut ShareHolders, amount:u64, coin_name:String,  ctx:&mut TxContext) {
+    let sender = tx_context::sender(ctx);
+    // firstly, check >  Is sender shareholder? 
+      assert!(
+       table::contains(&shareholders.shareholders_amount, sender),
+        ERROR_YOU_ARE_NOT_SHAREHOLDER   
+     );
+      // let take shareholder_bag from table 
+      let share_holder_bag = table::borrow_mut(&mut shareholders.shareholders_amount, sender);
+      //decrease balance in table 
+      let coin_value = bag::borrow_mut<String, Balance<T>>( share_holder_bag, coin_name);
+      // calculate withdraw balance 
+      let coin_transfer = coin::take(coin_value, amount, ctx);
+      // send fund to sender 
+      transfer::public_transfer(coin_transfer, sender);       
+}
 
-// public fun admin_withdraw<T>(_:&AdminCap, fund:&mut Fund_Balances<T>, withdraw_amount:u64, ctx:&mut TxContext) { 
-//     // check the input amount <= fund.total_fund - fund.locked_amount
-
-//     let withdraw: Coin<T> = coin::take(&mut fund.total_fund, withdraw_amount, ctx);
-//     transfer::public_transfer(withdraw, tx_context::sender(ctx));
-// }
+public fun admin_withdraw<T>(_:&AdminCap, fund:&mut Fund_Balances, withdraw_amount:u64, coin_name:String, ctx:&mut TxContext) { 
+    // check the input amount <= fund.total_fund - fund.locked_amount
+    let total_value = bag::borrow_mut<String, Balance<T>>( &mut fund.total_fund, coin_name); 
+    let withdraw = coin::take(total_value, withdraw_amount, ctx);
+    transfer::public_transfer(withdraw, tx_context::sender(ctx));
+}
 
    // calculate shareholder_withdraw_amount and add table it
 public fun fund_distribution<T>(_:&AdminCap, fund:&mut Fund_Balances, shareholder:&mut ShareHolders, distribution_amount: u64, coin_name: String, ctx:&mut TxContext) {
@@ -199,11 +201,6 @@ public fun set_shareholders(_: &AdminCap, receipt:&mut ShareHolders, shareholder
         assert!(percentange_sum == 10000, ERROR_INVALID_PERCENTAGE_SUM);
 }
 
- // get receipt.shareholders.length 
-fun get_shareholders_length(receipt:&ShareHolders): u64 {
-     table::length(&receipt.shareholders_percentage)
-}
-
 #[test_only]
 
 
@@ -223,6 +220,7 @@ fun get_shareholders_length(receipt:&ShareHolders): u64 {
     public fun get_bag_fund<T>(bag:& Fund_Balances, coin_metada: &CoinMetadata<T>): &Balance<T> {
         bag::borrow(&bag.total_fund, coin::get_name(coin_metada))
     }
+
       public fun get_bag_fund_SUI(bag: &Fund_Balances): &Balance<SUI> {
          let name  = b"sui";
          let name_string = string::utf8(name);
@@ -235,9 +233,5 @@ fun get_shareholders_length(receipt:&ShareHolders): u64 {
            let shareholder_allowance = bag::borrow<String, Balance<T>>(shareholder_bag, token_name );
            balance::value<T>(shareholder_allowance)
     }
-//     // return total_fund value as a u64
-//     public fun return_total_fund<T>(fund: &Fund_Balances<T>): u64 {
-//         balance::value(&fund.total_fund) 
-//    }
-   
+
 }

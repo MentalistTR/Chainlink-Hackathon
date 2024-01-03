@@ -116,6 +116,87 @@ fun users_deposit_usdc<USDC>(ts: &mut Scenario) {
 
    }
 
+ //*****************************************************************************************************************************************// 
+
+   fun admin_distribute_funds_usdc<T>(ts: &mut Scenario, distribution_amount: u64) {
+
+      let owner: address = @0xA;
+      let test_address1: address = @0xB;
+      let test_address2: address = @0xC;
+      let test_address3: address = @0xD;
+      let test_address4: address = @0xE;
+
+      next_tx(ts,owner);
+   {
+      let admin_cap = ts::take_from_sender<AdminCap>(ts);
+      let shared_ShareHolders = ts::take_shared<ShareHolders>(ts);
+      let fund_balances = ts::take_shared<Fund_Balances>(ts);
+      let name  = b"usdc";
+      let name_string = string::utf8(name);
+
+      fp::fund_distribution<T>(&admin_cap, &mut fund_balances, &mut shared_ShareHolders, distribution_amount, name_string, ts::ctx(ts) );
+
+      ts::return_to_sender(ts,admin_cap); 
+      ts::return_shared(shared_ShareHolders);
+      ts::return_shared(fund_balances);
+   }
+
+   }
+
+    //*****************************************************************************************************************************************// 
+
+   fun admin_distribute_funds_usdt<T>(ts: &mut Scenario, distribution_amount: u64) {
+
+      let owner: address = @0xA;
+      let test_address1: address = @0xB;
+      let test_address2: address = @0xC;
+      let test_address3: address = @0xD;
+      let test_address4: address = @0xE;
+
+      next_tx(ts,owner);
+   {
+      let admin_cap = ts::take_from_sender<AdminCap>(ts);
+      let shared_ShareHolders = ts::take_shared<ShareHolders>(ts);
+      let fund_balances = ts::take_shared<Fund_Balances>(ts);
+      let name  = b"usdt";
+      let name_string = string::utf8(name);
+
+      fp::fund_distribution<T>(&admin_cap, &mut fund_balances, &mut shared_ShareHolders, distribution_amount, name_string, ts::ctx(ts) );
+
+      ts::return_to_sender(ts,admin_cap); 
+      ts::return_shared(shared_ShareHolders);
+      ts::return_shared(fund_balances);
+   }
+
+   }
+
+ //*****************************************************************************************************************************************// 
+   
+   fun admin_distribute_funds_sui<T>(ts: &mut Scenario, distribution_amount: u64) {
+
+      let owner: address = @0xA;
+      let test_address1: address = @0xB;
+      let test_address2: address = @0xC;
+      let test_address3: address = @0xD;
+      let test_address4: address = @0xE;
+
+      next_tx(ts,owner);
+   {
+      let admin_cap = ts::take_from_sender<AdminCap>(ts);
+      let shared_ShareHolders = ts::take_shared<ShareHolders>(ts);
+      let fund_balances = ts::take_shared<Fund_Balances>(ts);
+      let name  = b"sui";
+      let name_string = string::utf8(name);
+
+      fp::fund_distribution<T>(&admin_cap, &mut fund_balances, &mut shared_ShareHolders, distribution_amount, name_string, ts::ctx(ts) );
+
+      ts::return_to_sender(ts,admin_cap); 
+      ts::return_shared(shared_ShareHolders);
+      ts::return_shared(fund_balances);
+   }
+
+   }
+
 //*****************************************************************************************************************************************//
 
 #[test]
@@ -763,349 +844,378 @@ fun admin_fund_distribution2() {
 
       ts::return_shared(shared_ShareHolders);
    };
-   
+
      ts::end(scenario_test);
 }
 
+//*****************************************************************************************************************************************************************//
 
-//we are doing same test for %50 %20 %10 %20
-// #[test]
-// fun admin_fund_distribution2() {
+#[test]
+fun shareholder_withdraw_fund() {
    
-//    let owner: address = @0xA;
-//    let test_address1: address = @0xB;
-//    let test_address2: address = @0xC;
-//    let test_address3: address = @0xD;
-//    let test_address4: address = @0xE;      
-
-//    let scenario_test = ts::begin(owner);
-//    let scenario = &mut scenario_test;
-
-//    // check init function
-//    next_tx(scenario,owner);
-//    {
-//       fp::init_for_testing(ts::ctx(scenario));
-//    };
-
-//    next_tx(scenario, owner);
-//    {
-//     create_share_objects<USDC>(scenario);
-//    };
-//    next_tx(scenario, owner);
-//      {
-//      init_for_testing_usdc(ts::ctx(scenario))
-//      };
-
-//    next_tx(scenario,owner);
-//    {
-//       add_share_holders<USDC>(scenario,5000,2000,1000,2000);
-//    };
-//    next_tx(scenario,owner);
-//    {
-//       users_deposit_fund<USDC>(scenario);  
-//    };
-//    next_tx(scenario,owner);
-//    {
-//       let admin_cap = ts::take_from_sender<AdminCap>(scenario);
-//       let shared_ShareHolders = ts::take_shared<ShareHolders<USDC>>(scenario);
-//       let distribution_amount:u64 = 5000;
-//       let fund_balances = ts::take_shared<Fund_Balances<USDC>>(scenario);
-      
-//     fp::fund_distribution(&admin_cap, &mut fund_balances, &mut shared_ShareHolders, distribution_amount);
-
-//       ts::return_to_sender(scenario,admin_cap);
-//       ts::return_shared(shared_ShareHolders);
-//       ts::return_shared(fund_balances);
-//    };
-//    next_tx(scenario,owner);
-//    {
-//       let shared_ShareHolders = ts::take_shared<ShareHolders<USDC>>(scenario);
-//       let user1_target_amount: u64 = fp::return_shareholder_allowance_amount(&shared_ShareHolders, test_address1);
-//       let user2_target_amount: u64 = fp::return_shareholder_allowance_amount(&shared_ShareHolders, test_address2);
-//       let user3_target_amount: u64 = fp::return_shareholder_allowance_amount(&shared_ShareHolders, test_address3);
-//       let user4_target_amount: u64 = fp::return_shareholder_allowance_amount(&shared_ShareHolders, test_address4);
-
-//       assert_eq(user1_target_amount, 2500);
-//       assert_eq(user2_target_amount, 1000);
-//       assert_eq(user3_target_amount, 500);
-//       assert_eq(user4_target_amount, 1000);
-
-//       ts::return_shared(shared_ShareHolders);
-//    };
-
-//   ts::end(scenario_test);
-// }
-
-// #[test]
-// fun shareholder_withdraw_fund() {
+   let owner: address = @0xA;
+   let test_address1: address = @0xB;
+   let test_address2: address = @0xC;
    
-//    let owner: address = @0xA;
-//    let test_address1: address = @0xB;
    
-//    let scenario_test = ts::begin(owner);
-//    let scenario = &mut scenario_test;
+   let scenario_test = ts::begin(owner);
+   let scenario = &mut scenario_test;
 
-//    // check init function
-//    next_tx(scenario,owner);
-//    {
-//       fp::init_for_testing(ts::ctx(scenario));
-//    };
+   // check init function
+   next_tx(scenario,owner);
+   {
+      fp::init_for_testing(ts::ctx(scenario));
+   };
+
+   next_tx(scenario, owner);
+     {
+     init_for_testing_usdc(ts::ctx(scenario))
+     };
+
+   next_tx(scenario, owner);
+     {
+     init_for_testing_usdt(ts::ctx(scenario))
+     };
+
+   next_tx(scenario,owner);
+   {
+       add_share_holders(scenario,5000,2000,1000,2000);
+   };
+   next_tx(scenario,owner);
+   {
+      users_deposit_usdc<USDC>(scenario); 
+   };
+      // user deposit 10000 USDT
+   next_tx(scenario,owner);
+   {
+      users_deposit_usdt<USDT>(scenario);
+   };
+      // user deposit 10000 SUI
+   next_tx(scenario,owner);
+   {
+       users_deposit_sui(scenario);
+   };
+
+   next_tx(scenario, owner);
+   {
+   // Lets distribute USDC
+       admin_distribute_funds_usdc<USDC>(scenario, 5000);
+   };
+    // Lets distribute USDT
+   next_tx(scenario, owner);
+   {
+     admin_distribute_funds_usdt<USDT>(scenario, 5000);
+   };
+    // Lets distribute SUI
+   next_tx(scenario, owner);
+   {
+     admin_distribute_funds_sui<SUI>(scenario, 5000);
+   };
+
+   next_tx(scenario, test_address1);
+   {    
+      // Total funds = 5000. Address1 can withdraw max 2500. Lets take 2000 now. 
+        let shared_ShareHolders = ts::take_shared<ShareHolders>(scenario);
+        let fund_balances = ts::take_shared<Fund_Balances>(scenario); 
+        let usdt_metadata = ts::take_immutable<CoinMetadata<USDT>>(scenario);
+        let withdraw_amount = 2000;
+        let coin_name  = b"usdt";
+        let coin_name_string = string::utf8(coin_name);
    
-//    next_tx(scenario, owner);
-//    {
-//       create_share_objects<USDC>(scenario);
-//    };
-//    next_tx(scenario, owner);
-//      {
-//        init_for_testing_usdc(ts::ctx(scenario))
-//      };
+       fp::shareholder_withdraw<USDT>(&mut shared_ShareHolders, withdraw_amount, coin_name_string , ts::ctx(scenario));
+      // We removed the lock_amount so no need to check fund balances. It is already changed. 
+         let usdt_balance = fp:: get_bag_fund<USDT>(&fund_balances, &usdt_metadata);
+        assert_eq(balance::value(usdt_balance),5000);
 
-//    next_tx(scenario,owner);
-//    {
-//        add_share_holders<USDC>(scenario,5000,2000,1000,2000);
-//    };
-//    next_tx(scenario,owner);
-//    {
-//        users_deposit_fund<USDC>(scenario); 
-//    };
-//    next_tx(scenario,owner);
-//    {
-//        admin_distributes_fund<USDC>(scenario);
-//    };
-//    next_tx(scenario, test_address1);
-//    {    
-//       // Total funds = 5000. Address1 can withdraw max 2500. Lets take 2000 now. 
-//         let shared_ShareHolders = ts::take_shared<ShareHolders<USDC>>(scenario);
-//         let fund_balances = ts::take_shared<Fund_Balances<USDC>>(scenario); 
-//         let distribute_amount = 2000;
+     //  test_address1 balance in table must be 500. 
+         let test_address1_allowance_amount:u64 = fp::return_shareholder_allowance_amount<USDT>(&shared_ShareHolders,  coin_name_string, test_address1);
+         assert_eq(test_address1_allowance_amount,500);
 
-//        fp::shareholder_withdraw(&mut shared_ShareHolders, distribute_amount, ts::ctx(scenario));
-//        // We removed the lock_amount so no need to check fund balances. It is already changed. 
-//         let fund_balances_amount:u64 = fp::return_total_fund(&fund_balances);
-//         assert_eq(fund_balances_amount,5000);
-//        // test_address1 balance in table must be 500. 
-//          let test_address1_allowance_amount:u64 = fp::return_shareholder_allowance_amount(&shared_ShareHolders, test_address1);
-//          assert_eq(test_address1_allowance_amount,500);
+        ts::return_shared(shared_ShareHolders);
+        ts::return_shared(fund_balances);
+        ts::return_immutable(usdt_metadata);
+   }; 
 
-//         ts::return_shared(shared_ShareHolders);
-//         ts::return_shared(fund_balances);
-//    }; 
-//    next_tx(scenario, test_address1);
-//    {    
-//         // we can take 500 more. It will be error when address1 try to withdraw more than 500.
-//         let shared_ShareHolders = ts::take_shared<ShareHolders<USDC>>(scenario);
-//         let fund_balances = ts::take_shared<Fund_Balances<USDC>>(scenario); 
-//         let distribute_amount = 500;
-      
-//        // lets check user1_account balance is equal to 2000
-//          let user1_account_balance= ts::take_from_sender<Coin<USDC>>(scenario);
-//          assert_eq(coin::value(&user1_account_balance), 2000);
-//          ts::return_to_sender(scenario, user1_account_balance);
-
-
-//          fp::shareholder_withdraw(&mut shared_ShareHolders, distribute_amount, ts::ctx(scenario));
-//           // Total funds must be  = 5000.
-//          let fund_balances_amount:u64 = fp::return_total_fund(&fund_balances);
-//          assert_eq(fund_balances_amount,5000);
-
-//          ts::return_shared(shared_ShareHolders);
-//          ts::return_shared(fund_balances);
-//    };
-//    next_tx(scenario, test_address1);
-//    {  
-//         // lets check user1_account balance is equal to 500
-//         let user1_account_balance= ts::take_from_sender<Coin<USDC>>(scenario);
-//         assert_eq(coin::value(&user1_account_balance), 500);
-//         ts::return_to_sender(scenario, user1_account_balance);
-
-//        let shared_ShareHolders = ts::take_shared<ShareHolders<USDC>>(scenario);
-//        // test_address1_allowance mumst be equal to 0. 
-//        let test_address1_allowance_amount:u64 = fp::return_shareholder_allowance_amount(&shared_ShareHolders, test_address1);
-//        assert_eq(test_address1_allowance_amount,0);
+   next_tx(scenario, test_address1);
+   {    
+      // Total funds = 5000. Address1 can withdraw max 500 now. Lets withdraw 500 now. 
+        let shared_ShareHolders = ts::take_shared<ShareHolders>(scenario);
+        let fund_balances = ts::take_shared<Fund_Balances>(scenario); 
+        let usdt_metadata = ts::take_immutable<CoinMetadata<USDT>>(scenario);
+        let withdraw_amount = 500;
+        let coin_name  = b"usdt";
+        let coin_name_string = string::utf8(coin_name);
    
-//        ts::return_shared(shared_ShareHolders);
-//    };
-//    next_tx(scenario,owner);
-//    {
-//         // Admin will withdraw the remaining funds max = 5000
-//       let admin_cap = ts::take_from_sender<AdminCap>(scenario);
-//       let fund_balances = ts::take_shared<Fund_Balances<USDC>>(scenario); 
-//       let withdraw_amount:u64 = 5000;
+       fp::shareholder_withdraw<USDT>(&mut shared_ShareHolders, withdraw_amount, coin_name_string , ts::ctx(scenario));
+      // We removed the lock_amount so no need to check fund balances. It is already changed. 
+         let usdt_balance = fp:: get_bag_fund<USDT>(&fund_balances, &usdt_metadata);
+        assert_eq(balance::value(usdt_balance),5000);
 
-//       fp::admin_withdraw(&admin_cap, &mut fund_balances, withdraw_amount, ts::ctx(scenario));
+     //  test_address1 balance in table must be 0. 
+         let test_address1_allowance_amount:u64 = fp::return_shareholder_allowance_amount<USDT>(&shared_ShareHolders,  coin_name_string, test_address1);
+         assert_eq(test_address1_allowance_amount,0);
+
+        ts::return_shared(shared_ShareHolders);
+        ts::return_shared(fund_balances);
+        ts::return_immutable(usdt_metadata);
+   };
+
+   // lets check test_address1 balance USDT is equal to 2500 USDT
+      next_tx(scenario, test_address1); 
+     {
+         let test_address1_account_balance= ts::take_from_sender<Coin<USDT>>(scenario);
+         assert_eq(coin::value(&test_address1_account_balance), 500);
+         ts::return_to_sender(scenario, test_address1_account_balance);
+
+         let test_address1_account_balance= ts::take_from_sender<Coin<USDT>>(scenario);
+         assert_eq(coin::value(&test_address1_account_balance), 2000);
+         ts::return_to_sender(scenario, test_address1_account_balance);
+     };
+
+    next_tx(scenario, test_address2);
+   {    
+      // Total funds = 5000. Address2 can withdraw max 1000. Lets take 500 now.
+        let shared_ShareHolders = ts::take_shared<ShareHolders>(scenario);
+        let fund_balances = ts::take_shared<Fund_Balances>(scenario); 
+        let usdc_metadata = ts::take_immutable<CoinMetadata<USDC>>(scenario);
+        let withdraw_amount = 500;
+        let coin_name  = b"usdc";
+        let coin_name_string = string::utf8(coin_name);
    
-//       ts::return_to_sender(scenario,admin_cap);
-//       ts::return_shared(fund_balances);
-//    };
-//     next_tx(scenario,owner);
-//     {    
-//       // lets check owner wallet balance is equal to 5000. 
-//         let owner_account_balance= ts::take_from_sender<Coin<USDC>>(scenario);
-//          assert_eq(coin::value(&owner_account_balance), 5000);
-//          ts::return_to_sender(scenario, owner_account_balance);
+       fp::shareholder_withdraw<USDC>(&mut shared_ShareHolders, withdraw_amount, coin_name_string , ts::ctx(scenario));
+      // We removed the lock_amount so no need to check fund balances. It is already changed. 
+         let usdc_balance = fp:: get_bag_fund<USDC>(&fund_balances, &usdc_metadata);
+        assert_eq(balance::value(usdc_balance), 5000);
 
-//     };
-//      ts::end(scenario_test);
-// }
+     //  test_address1 balance in table must be 500. 
+         let test_address1_allowance_amount:u64 = fp::return_shareholder_allowance_amount<USDC>(&shared_ShareHolders,  coin_name_string, test_address2);
+         assert_eq(test_address1_allowance_amount,500);
 
-// #[test]
-// #[expected_failure(abort_code = 0000000000000000000000000000000000000000000000000000000000000002::balance::ENotEnough)]
-// fun shareholder_withdraw_fund_error() {
+        ts::return_shared(shared_ShareHolders);
+        ts::return_shared(fund_balances);
+        ts::return_immutable(usdc_metadata);
+   }; 
+ 
+      next_tx(scenario, test_address2);
+   {    
+      // Total funds = 5000. Address2 can withdraw max 500. Lets take 500 now. 
+        let shared_ShareHolders = ts::take_shared<ShareHolders>(scenario);
+        let fund_balances = ts::take_shared<Fund_Balances>(scenario); 
+        let usdc_metadata = ts::take_immutable<CoinMetadata<USDC>>(scenario);
+        let withdraw_amount = 500;
+        let coin_name  = b"usdc";
+        let coin_name_string = string::utf8(coin_name);
    
-//    let owner: address = @0xA;
-//    let test_address1: address = @0xB;
+       fp::shareholder_withdraw<USDC>(&mut shared_ShareHolders, withdraw_amount, coin_name_string , ts::ctx(scenario));
+      // We removed the lock_amount so no need to check fund balances. It is already changed. 
+         let usdc_balance = fp:: get_bag_fund<USDC>(&fund_balances, &usdc_metadata);
+        assert_eq(balance::value(usdc_balance), 5000);
 
-//    let scenario_test = ts::begin(owner);
-//    let scenario = &mut scenario_test;
+     //  test_address2 balance in table must be equal to 0
+         let test_address1_allowance_amount:u64 = fp::return_shareholder_allowance_amount<USDC>(&shared_ShareHolders,  coin_name_string, test_address2);
+         assert_eq(test_address1_allowance_amount,0);
 
-//    // check init function
-//    next_tx(scenario,owner);
-//    {
-//       fp::init_for_testing(ts::ctx(scenario));
-//    };
-//    next_tx(scenario, owner);
-//    {
-//       create_share_objects<USDC>(scenario);
-//    };
-//    next_tx(scenario, owner);
-//      {
-//        init_for_testing_usdc(ts::ctx(scenario))
-//      };
-//    next_tx(scenario,owner);
-//    {
-//         add_share_holders<USDC>(scenario,5000,2000,1000,2000);
-//    };
-//    next_tx(scenario,owner);
-//    {
-//        users_deposit_fund<USDC>(scenario); 
-//    };
-//    next_tx(scenario,owner);
-//    {
-//        admin_distributes_fund<USDC>(scenario);
-//    };
-//      next_tx(scenario,test_address1);
-//     {
-//         let shared_ShareHolders = ts::take_shared<ShareHolders<USDC>>(scenario);
-//         let fund_balances = ts::take_shared<Fund_Balances<USDC>>(scenario); 
-//         let withdraw_amount= 10000;
+        ts::return_shared(shared_ShareHolders);
+        ts::return_shared(fund_balances);
+        ts::return_immutable(usdc_metadata);
+   }; 
+
+     // lets check test_address2 balance USDC is equal to 1000
+   next_tx(scenario, test_address2);
+     {
+         let test_address2_account_balance= ts::take_from_sender<Coin<USDC>>(scenario);
+         assert_eq(coin::value(&test_address2_account_balance), 500);
+         ts::return_to_sender(scenario, test_address2_account_balance);
+
+         let test_address2_account_balance= ts::take_from_sender<Coin<USDC>>(scenario);
+         assert_eq(coin::value(&test_address2_account_balance), 500);
+         ts::return_to_sender(scenario, test_address2_account_balance);
+     };
+
+   next_tx(scenario,owner);
+   {
+        // Admin will withdraw the remaining USDC funds 5000
+      let admin_cap = ts::take_from_sender<AdminCap>(scenario);
+      let fund_balances = ts::take_shared<Fund_Balances>(scenario); 
+      let withdraw_amount:u64 = 5000;
+      let coin_name  = b"usdc";
+      let coin_name_string = string::utf8(coin_name);
+
+      fp::admin_withdraw<USDC>(&admin_cap, &mut fund_balances, withdraw_amount, coin_name_string, ts::ctx(scenario));
+   
+      ts::return_to_sender(scenario,admin_cap);
+      ts::return_shared(fund_balances);
+   };
+
+    next_tx(scenario,owner);
+    {    
+      // lets check owner wallet balance is equal to 5000. 
+        let owner_account_balance= ts::take_from_sender<Coin<USDC>>(scenario);
+         assert_eq(coin::value(&owner_account_balance), 5000);
+         ts::return_to_sender(scenario, owner_account_balance);
+    };
+
+     ts::end(scenario_test);
+  }
+
+  //*****************************************************************************************************************************************************************//
+
+#[test]
+#[expected_failure(abort_code = 0000000000000000000000000000000000000000000000000000000000000002::balance::ENotEnough)]
+fun shareholder_withdraw_fund_error() {
+   
+   let owner: address = @0xA;
+   let test_address1: address = @0xB;
+
+   let scenario_test = ts::begin(owner);
+   let scenario = &mut scenario_test;
+
+  next_tx(scenario,owner);
+   {
+      fp::init_for_testing(ts::ctx(scenario));
+   };
+
+   next_tx(scenario, owner);
+     {
+     init_for_testing_usdc(ts::ctx(scenario))
+     };
+
+   next_tx(scenario, owner);
+     {
+     init_for_testing_usdt(ts::ctx(scenario))
+     };
+
+   next_tx(scenario,owner);
+   {
+       add_share_holders(scenario,5000,2000,1000,2000);
+   };
+   next_tx(scenario,owner);
+   {
+      users_deposit_usdc<USDC>(scenario); 
+   };
+      // user deposit 10000 USDT
+   next_tx(scenario,owner);
+   {
+      users_deposit_usdt<USDT>(scenario);
+   };
+      // user deposit 10000 SUI
+   next_tx(scenario,owner);
+   {
+       users_deposit_sui(scenario);
+   };
+
+   next_tx(scenario, owner);
+   {
+   // Lets distribute USDC
+       admin_distribute_funds_usdc<USDC>(scenario, 5000);
+   };
+    // Lets distribute USDT
+   next_tx(scenario, owner);
+   {
+      admin_distribute_funds_usdt<USDT>(scenario, 5000);
+   };
+    // Lets distribute SUI
+   next_tx(scenario, owner);
+   {
+      admin_distribute_funds_sui<SUI>(scenario, 5000);
+   };
+
+     next_tx(scenario,test_address1);
+    {
+        let shared_ShareHolders = ts::take_shared<ShareHolders>(scenario);
+        let fund_balances = ts::take_shared<Fund_Balances>(scenario); 
+        let withdraw_amount= 10000;
+        let coin_name  = b"usdc";
+        let coin_name_string = string::utf8(coin_name);
         
-//        fp::shareholder_withdraw(&mut shared_ShareHolders, withdraw_amount, ts::ctx(scenario));
+       fp::shareholder_withdraw<USDC>(&mut shared_ShareHolders, withdraw_amount, coin_name_string , ts::ctx(scenario));
 
-//        ts::return_shared(shared_ShareHolders);
-//        ts::return_shared(fund_balances);
+       ts::return_shared(shared_ShareHolders);
+       ts::return_shared(fund_balances);
 
-//     };
-//      ts::end(scenario_test);
-// }
+    };
+     ts::end(scenario_test);
+}
+
+  //*****************************************************************************************************************************************************************//
+
 // // // we are expecting error. Admin try to withdraw more than 5000.
-// #[test]
-// #[expected_failure(abort_code = 0000000000000000000000000000000000000000000000000000000000000002::balance::ENotEnough)]
-// fun admin_withdraw_fund_error() {
+#[test]
+#[expected_failure(abort_code = 0000000000000000000000000000000000000000000000000000000000000002::balance::ENotEnough)]
+fun admin_withdraw_fund_error() {
    
-//    let owner: address = @0xA;
-   
-//    let scenario_test = ts::begin(owner);
-//    let scenario = &mut scenario_test;
+  let owner: address = @0xA;
+   let test_address1: address = @0xB;
 
-//    // check init function
-//    next_tx(scenario,owner);
-//    {
-//       fp::init_for_testing(ts::ctx(scenario));
-//    };
-//    next_tx(scenario, owner);
-//    {
-//       create_share_objects<USDC>(scenario);
-//    };
-//    next_tx(scenario, owner);
-//      {
-//        init_for_testing_usdc(ts::ctx(scenario))
-//      };
-//    next_tx(scenario,owner);
-//    {
-//       add_share_holders<USDC>(scenario,5000,2000,1000,2000);
-//    };
-//    next_tx(scenario,owner);
-//    {
-//        users_deposit_fund<USDC>(scenario); 
-//    };
-//    next_tx(scenario,owner);
-//    {
-//        admin_distributes_fund<USDC>(scenario);
-//    };
-//      next_tx(scenario,owner);
-//     {
-//         // Admin will withdraw the remaining funds max = 5000
-//        let admin_cap = ts::take_from_sender<AdminCap>(scenario);
-//        let fund_balances = ts::take_shared<Fund_Balances<USDC>>(scenario); 
-//        let withdraw_amount:u64 = 10000;
+   let scenario_test = ts::begin(owner);
+   let scenario = &mut scenario_test;
 
-//        fp::admin_withdraw(&admin_cap, &mut fund_balances, withdraw_amount, ts::ctx(scenario));
-   
-//        ts::return_to_sender(scenario,admin_cap);
-//        ts::return_shared(fund_balances);
+  next_tx(scenario,owner);
+   {
+      fp::init_for_testing(ts::ctx(scenario));
+   };
 
-//     };
-//      ts::end(scenario_test);
-// }
+   next_tx(scenario, owner);
+     {
+     init_for_testing_usdc(ts::ctx(scenario))
+     };
 
-// #[test]
-// #[expected_failure(abort_code =fp::ERROR_SHARE_ALREADY_CREATED)]
+   next_tx(scenario, owner);
+     {
+     init_for_testing_usdt(ts::ctx(scenario))
+     };
 
-// fun admin_create_share_object() {
+   next_tx(scenario,owner);
+   {
+       add_share_holders(scenario,5000,2000,1000,2000);
+   };
+   next_tx(scenario,owner);
+   {
+      users_deposit_usdc<USDC>(scenario); 
+   };
+      // user deposit 10000 USDT
+   next_tx(scenario,owner);
+   {
+      users_deposit_usdt<USDT>(scenario);
+   };
+      // user deposit 10000 SUI
+   next_tx(scenario,owner);
+   {
+       users_deposit_sui(scenario);
+   };
 
-//    let owner: address = @0xA;
-   
-//    let scenario_test = ts::begin(owner);
-//    let scenario = &mut scenario_test;
+   next_tx(scenario, owner);
+   {
+   // Lets distribute USDC
+       admin_distribute_funds_usdc<USDC>(scenario, 5000);
+   };
+    // Lets distribute USDT
+   next_tx(scenario, owner);
+   {
+      admin_distribute_funds_usdt<USDT>(scenario, 5000);
+   };
+    // Lets distribute SUI
+   next_tx(scenario, owner);
+   {
+      admin_distribute_funds_sui<SUI>(scenario, 5000);
+   };
+    next_tx(scenario,owner);
+    {
+        // Admin will withdraw the remaining funds max = 5000
+        let admin_cap = ts::take_from_sender<AdminCap>(scenario);
+        let fund_balances = ts::take_shared<Fund_Balances>(scenario); 
+        let withdraw_amount:u64 = 10000;
+        let coin_name  = b"usdc";
+        let coin_name_string = string::utf8(coin_name);
 
-//    // check init function
-//    next_tx(scenario,owner);
-//    {
-//       fp::init_for_testing(ts::ctx(scenario));
-//    };
-//    next_tx(scenario, owner);
-//    {
-//       create_share_objects<USDC>(scenario);
-//    };
-//    next_tx(scenario, owner);
-//    {
-//       create_share_objects<USDC>(scenario);
-//    };
-
-//    ts::end(scenario_test);
-// }
-
-// fun fund_distribution_test() {
-
-//    let owner: address = @0xA;
-//    let test_address1: address = @0xB;
-//    let test_address2: address = @0xC;
-//    let test_address3: address = @0xD;
-//    let test_address4: address = @0xE;
-   
-//    let scenario_test = ts::begin(owner);
-//    let scenario = &mut scenario_test;
-
-//    // check init function
-//    next_tx(scenario,owner);
-//    {
-//    fp::init_for_testing(ts::ctx(scenario));
-//    init_for_testing_usdc(ts::ctx(scenario));
-//    init_for_testing_usdt(ts::ctx(scenario));
-//    };
-
-
-
-
-
-
-
-
-
-
-//      ts::end(scenario_test);
-// }
-
-
+        fp::admin_withdraw<USDC>(&admin_cap, &mut fund_balances, withdraw_amount, coin_name_string, ts::ctx(scenario));
+ 
+    
+        ts::return_to_sender(scenario,admin_cap);
+        ts::return_shared(fund_balances);
+ 
+    };
+     ts::end(scenario_test);
+}
 
 }
