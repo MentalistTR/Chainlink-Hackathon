@@ -1,5 +1,5 @@
-import { SuiClient, getFullnodeUrl} from '@mysten/sui.js/client';
-import {  TransactionBlock } from '@mysten/sui.js/transactions';
+import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
+import { TransactionBlock } from '@mysten/sui.js/transactions';
 import { Ed25519Keypair } from '@mysten/sui.js/keypairs/ed25519';
 import { fromB64 } from "@mysten/sui.js/utils";
 
@@ -7,15 +7,7 @@ import path, { dirname } from "path";
 import { fileURLToPath } from "url";
 import { execSync } from "child_process";
 import { writeFileSync } from "fs";
-import {  SuiObjectChange } from "@mysten/sui.js/client";
-
-// create a client connected to devnet
-const client = new SuiClient({ url: getFullnodeUrl('devnet')});
-
-//const txb = new TransactionBlock();
-const path_to_scripts = dirname(fileURLToPath(import.meta.url))
-
-const path_to_contracts = path.join(dirname(fileURLToPath(import.meta.url)) , "../sources")
+import { SuiObjectChange } from "@mysten/sui.js/client";
 
 const privkey = process.env.PRIVATE_KEY
 if (!privkey) {
@@ -23,7 +15,12 @@ if (!privkey) {
     process.exit(1)
 }
 
+const path_to_scripts = dirname(fileURLToPath(import.meta.url))
+
 const keypair = Ed25519Keypair.fromSecretKey(fromB64(privkey).slice(1))
+const client = new SuiClient({ url: getFullnodeUrl('devnet') });
+
+const path_to_contracts = path.join(path_to_scripts, "../sources")
 
 console.log("Building move code...")
 
@@ -35,38 +32,44 @@ const { modules, dependencies } = JSON.parse(execSync(
 console.log("Deploying contracts...");
 console.log(`Deploying from ${keypair.toSuiAddress()}`)
 
-const deploy_trx = new TransactionBlock() 
+const deploy_trx = new TransactionBlock()
 const [upgrade_cap] = deploy_trx.publish({
     modules, dependencies
 })
 
 deploy_trx.transferObjects([upgrade_cap], deploy_trx.pure(keypair.toSuiAddress()))
 
-const{objectChanges, balanceChanges} = await client.signAndExecuteTransactionBlock({
+const { objectChanges, balanceChanges } = await client.signAndExecuteTransactionBlock({
     signer: keypair, transactionBlock: deploy_trx, options: {
         showBalanceChanges: true,
         showEffects: true,
         showEvents: true,
         showInput: false,
         showObjectChanges: true,
-        showRawInput: false  
-
+        showRawInput: false
     }
 })
 
-const parse_cost = (amount: string) => Math.abs(parseInt(amount)) / 1_000_000_000
-
-if (balanceChanges) {
-    console.log("Cost to deploy:", parse_cost(balanceChanges[0].amount), "SUI")
-}
-
-if (!objectChanges) {
-    console.log("Error: RPC did not return objectChanges")
+if (!balanceChanges) {
+    console.log("Error: Balance Changes was undefined")
     process.exit(1)
 }
 
-const published_event = objectChanges.find(obj => obj.type == "published")
-if (published_event?.type != "published") {
+if (!objectChanges) {
+    console.log("Error: object  Changes was undefined")
+    process.exit(1)
+}
+console.log(objectChanges)
+
+function parse_amount(amount: string): number {
+    return parseInt(amount) / 1_000_000_000
+}
+
+console.log(`Spent ${Math.abs(parse_amount(balanceChanges[0].amount))} on deploy`)
+
+const published_change = objectChanges.find(change => change.type == "published")
+if (published_change?.type !== "published") {
+    console.log("Error: Did not find correct published change")
     process.exit(1)
 }
 
@@ -77,51 +80,39 @@ const find_one_by_type = (changes: SuiObjectChange[], type: string) => {
     }
 }
 
-// const package_id = published_event.packageId
-// const place_type = `${package_id}::board::Place` 
+const deployed_address: any = {
+    PACKAGE_ID: published_change.packageId
+}
 
-// const place_id = find_one_by_type(objectChanges, place_type)
-// if (!place_id) {
-//     console.log("Error: Could not find place creation in results of publish")
-//     process.exit(1)
-// }
+// Get Fund_Balances Share object 
+const fund_balances = `${deployed_address.PACKAGE_ID}::fund_project::Fund_Balances`
 
-// let deployed_addresses = {
-//     types: {
-//         PLACE: place_type
-//     },
-//     PACKAGE_ID: package_id,
-//     PLACE: place_id
-// }
+const fund_balances_id = find_one_by_type(objectChanges, fund_balances)
+if (!fund_balances_id) {
+    console.log("Error: Could not find Place object")
+    process.exit(1)
+}
 
-// const read_quadrant_trx = new TransactionBlock()
-// const [_] = read_quadrant_trx.moveCall({
-//     target: `${package_id}::board::get_quadrants`,
-//     arguments: [read_quadrant_trx.object(place_id)]
-// })
+deployed_address.Fund_Balances = fund_balances_id
 
-// console.log("Getting addresses of quadrants...")
-// const read_result = await client.devInspectTransactionBlock({
-//     transactionBlock: read_quadrant_trx, sender: keypair.toSuiAddress()
-// })
+const deployed_path1 = path.join(path_to_scripts, "../scripts/deployed_objects.json")
+writeFileSync(deployed_path1, JSON.stringify(deployed_address, null, 4))
 
-// const quadrants = read_result.results?.[0]?.returnValues?.[0]?.[0]
-// if (!quadrants || quadrants.length != 129) {
-//     console.log("Incorrect value for quadrants result")
-//     process.exit(1)
-// }
+// Get ShareHolder shareobject
+const share_balances = `${deployed_address.PACKAGE_ID}::fund_project::ShareHolders`
 
-// const [__, ...bytes] = quadrants
-// const chunked_address_bytes = Array.from({length: 4}).map((_, i) => bytes.slice(i * 32, (i + 1) * 32))
-// const addresses = chunked_address_bytes.map(address_bytes => "0x" + address_bytes.map(byte => byte.toString(16).padStart(2, "0")).join(""))
+const share_holders_id = find_one_by_type(objectChanges, share_balances)
+if (!share_holders_id) {
+    console.log("Error: Could not find Place object")
+    process.exit(1)
+}
 
-// deployed_addresses = Object.assign(deployed_addresses, {
-//     QUADRANT_ADDRESSES: addresses
-// })
+deployed_address.Shareholders = share_holders_id
 
-// console.log("Writing addresses to json...")
-// const path_to_address_file = path.join(dirname(fileURLToPath(import.meta.url)), "../src/deployed_addresses.json")
-// writeFileSync(path_to_address_file, JSON.stringify(deployed_addresses, null, 4))
+const deployed_path2 = path.join(path_to_scripts, "../scripts/deployed_objects.json")
+writeFileSync(deployed_path2, JSON.stringify(deployed_address, null, 4))
+
+
 
 
 
