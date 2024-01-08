@@ -1,25 +1,21 @@
 import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
 import { TransactionBlock } from '@mysten/sui.js/transactions';
-import { Ed25519Keypair } from '@mysten/sui.js/keypairs/ed25519';
-import { fromB64 } from "@mysten/sui.js/utils";
-
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
 import { execSync } from "child_process";
 import { writeFileSync } from "fs";
-import { SuiObjectChange } from "@mysten/sui.js/client";
+import { depositSuiBag } from './transactions';
+import { keyPair1, parse_amount, find_one_by_type } from './helper'
+import data from './deployed_objects.json';
 
-const privkey = process.env.PRIVATE_KEY
-if (!privkey) {
-    console.log("Error: DEPLOYER_B64_PRIVKEY not set as env variable.")
-    process.exit(1)
-}
+const packageId = data.PACKAGE_ID;
+const fundBalances = data.Fund_Balances;
+const shareholders = data.Shareholders;
+
+let keypair = keyPair1();
 
 const path_to_scripts = dirname(fileURLToPath(import.meta.url))
-
-const keypair = Ed25519Keypair.fromSecretKey(fromB64(privkey).slice(1))
 const client = new SuiClient({ url: getFullnodeUrl('devnet') });
-
 const path_to_contracts = path.join(path_to_scripts, "../sources")
 
 console.log("Building move code...")
@@ -33,6 +29,7 @@ console.log("Deploying contracts...");
 console.log(`Deploying from ${keypair.toSuiAddress()}`)
 
 const deploy_trx = new TransactionBlock()
+
 const [upgrade_cap] = deploy_trx.publish({
     modules, dependencies
 })
@@ -61,10 +58,6 @@ if (!objectChanges) {
 }
 console.log(objectChanges)
 
-function parse_amount(amount: string): number {
-    return parseInt(amount) / 1_000_000_000
-}
-
 console.log(`Spent ${Math.abs(parse_amount(balanceChanges[0].amount))} on deploy`)
 
 const published_change = objectChanges.find(change => change.type == "published")
@@ -73,12 +66,8 @@ if (published_change?.type !== "published") {
     process.exit(1)
 }
 
-const find_one_by_type = (changes: SuiObjectChange[], type: string) => {
-    const object_change = changes.find(change => change.type == "created" && change.objectType == type)
-    if (object_change?.type == "created") {
-        return object_change.objectId
-    }
-}
+// get package_id
+const package_id = published_change.packageId
 
 const deployed_address: any = {
     PACKAGE_ID: published_change.packageId
@@ -123,8 +112,11 @@ if (!admin_cap_id) {
 
 deployed_address.AdminCap = admin_cap_id
 
-const deployed_path3 = path.join(path_to_scripts, "../scripts/deployed_objects.json")
-writeFileSync(deployed_path3, JSON.stringify(deployed_address, null, 4))
+
+// user deposit 100 SUI 
+depositSuiBag(packageId, fundBalances)
+
+
 
 
 
