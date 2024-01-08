@@ -112,6 +112,20 @@ deployed_address.Shareholders = share_holders_id
 const deployed_path2 = path.join(path_to_scripts, "../scripts/deployed_objects.json")
 writeFileSync(deployed_path2, JSON.stringify(deployed_address, null, 4))
 
+// Get AdminCap
+const admin_cap = `${deployed_address.PACKAGE_ID}::fund_project::AdminCap`
+
+const admin_cap_id = find_one_by_type(objectChanges, admin_cap)
+if (!admin_cap_id) {
+    console.log("Error: Could not find Place object")
+    process.exit(1)
+}
+
+deployed_address.AdminCap = admin_cap_id
+
+const deployed_path3 = path.join(path_to_scripts, "../scripts/deployed_objects.json")
+writeFileSync(deployed_path3, JSON.stringify(deployed_address, null, 4))
+
 
 
 

@@ -1,5 +1,6 @@
 {
-    "PACKAGE_ID": "0x78ef61ee4058bd009257bdc4ab917379234aaa8f5b7a192177ff8d6047b1b050",
-    "Fund_Balances": "0x7854857b70022630b4c1b37692478c9870c0aa9099e9d7af7b11cb4c3dbae6ff",
-    "Shareholders": "0x4206c74f2f52843dd7fde58f4973ccf78fb64aaadab4dc1f66f461a7ccd6d97d"
+    "PACKAGE_ID": "0xfbb3af365b30dfab8f331d427c5e680ed8a0c72780cd7e50facfc7dd55dcec95",
+    "Fund_Balances": "0xb2f1b96f93d47f6a79b302afce399a135ed9cac657c9185831fbbd08d2b3e288",
+    "Shareholders": "0xada38799a1d0d8418827b05df1c672b0da21d128c293ee7bc0d45a26c68ccc86",
+    "AdminCap": "0xfc28822b158b64cb76e2a2c7b24554a46308c4281e1d0b29139a4156420a1341"
 }
