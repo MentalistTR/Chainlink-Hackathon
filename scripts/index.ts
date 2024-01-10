@@ -4,18 +4,14 @@ import path, { dirname } from "path";
 import { fileURLToPath } from "url";
 import { execSync } from "child_process";
 import { writeFileSync } from "fs";
-import { depositSuiBag } from './transactions';
+import { DepositSuiBag } from './transactions';
 import { keyPair1, parse_amount, find_one_by_type } from './helper'
-import data from './deployed_objects.json';
 
-const packageId = data.PACKAGE_ID;
-const fundBalances = data.Fund_Balances;
-const shareholders = data.Shareholders;
 
 let keypair = keyPair1();
 
 const path_to_scripts = dirname(fileURLToPath(import.meta.url))
-const client = new SuiClient({ url: getFullnodeUrl('devnet') });
+const client = new SuiClient({ url: getFullnodeUrl('testnet') });
 const path_to_contracts = path.join(path_to_scripts, "../sources")
 
 console.log("Building move code...")
@@ -66,55 +62,72 @@ if (published_change?.type !== "published") {
     process.exit(1)
 }
 
+
 // get package_id
 const package_id = published_change.packageId
 
 const deployed_address: any = {
-    PACKAGE_ID: published_change.packageId
+    packageId: published_change.packageId,
+
+    fundProject:{
+        fundBalances: "",
+        shareholders:"",
+        AdminCap: "",
+    },
+    
+    usdc:{
+        USDCcointype:`${package_id}::usdc::USDC`
+    },
+    usdt:{
+        USDTcointype:`${package_id}::usdt::USDT`
+    }
+
 }
 
 // Get Fund_Balances Share object 
-const fund_balances = `${deployed_address.PACKAGE_ID}::fund_project::Fund_Balances`
+const fund_balances = `${deployed_address.packageId}::fund_project::Fund_Balances`
 
 const fund_balances_id = find_one_by_type(objectChanges, fund_balances)
 if (!fund_balances_id) {
-    console.log("Error: Could not find Place object")
+    console.log("Error: Could not find Fund_balances object")
     process.exit(1)
 }
 
-deployed_address.Fund_Balances = fund_balances_id
+deployed_address.fundProject.fundBalances = fund_balances_id;
 
-const deployed_path1 = path.join(path_to_scripts, "../scripts/deployed_objects.json")
-writeFileSync(deployed_path1, JSON.stringify(deployed_address, null, 4))
+
 
 // Get ShareHolder shareobject
-const share_balances = `${deployed_address.PACKAGE_ID}::fund_project::ShareHolders`
+const share_balances = `${deployed_address.packageId}::fund_project::ShareHolders`
 
 const share_holders_id = find_one_by_type(objectChanges, share_balances)
 if (!share_holders_id) {
-    console.log("Error: Could not find Place object")
+    console.log("Error: Could not find Shareholder object")
     process.exit(1)
 }
 
-deployed_address.Shareholders = share_holders_id
-
-const deployed_path2 = path.join(path_to_scripts, "../scripts/deployed_objects.json")
-writeFileSync(deployed_path2, JSON.stringify(deployed_address, null, 4))
+deployed_address.fundProject.shareholders = share_holders_id;
 
 // Get AdminCap
-const admin_cap = `${deployed_address.PACKAGE_ID}::fund_project::AdminCap`
+const admin_cap = `${deployed_address.packageId}::fund_project::AdminCap`
 
 const admin_cap_id = find_one_by_type(objectChanges, admin_cap)
 if (!admin_cap_id) {
-    console.log("Error: Could not find Place object")
+    console.log("Error: Could not find Admin object ")
     process.exit(1)
 }
 
-deployed_address.AdminCap = admin_cap_id
+deployed_address.fundProject.AdminCap = admin_cap_id;
+
+
+writeFileSync(path.join(path_to_scripts, "../scripts/deployed_objects.json"), JSON.stringify(deployed_address, null, 4))
+
+
+
 
 
 // user deposit 100 SUI 
-depositSuiBag(packageId, fundBalances)
+// DepositSuiBag(packageId, fundBalances)
 
 
 

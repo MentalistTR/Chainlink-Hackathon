@@ -1,16 +1,18 @@
 import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
 import { TransactionBlock } from '@mysten/sui.js/transactions';
-import { keyPair1, parse_amount, find_one_by_type } from './helper'
+import { keyPair1, parse_amount, find_one_by_type} from './helper'
 import data from './deployed_objects.json';
 
-const packageId = data.PACKAGE_ID;
-const fundBalances = data.Fund_Balances;
-const shareholders = data.Shareholders;
 
-export const depositSuiBag = async (packageId: string, fund_balances_id: string) => {
+const packageId = data.packageId;
+const fundBalances = data.fundProject.fundBalances;
+const shareholders = data.fundProject.shareholders;
+const usdc_cointype = data.usdc.USDCcointype;
+
+export const DepositSuiBag = async (packageId: string, fund_balances_id: string) => {
 
     const keypair = keyPair1();
-    const client = new SuiClient({ url: getFullnodeUrl('devnet') });
+    const client = new SuiClient({ url: getFullnodeUrl('testnet') });
 
     const deposit_sui_bag = new TransactionBlock
 
@@ -38,5 +40,13 @@ export const depositSuiBag = async (packageId: string, fund_balances_id: string)
     console.log(return_values)
 
 }
+
+
+
+ DepositSuiBag(packageId, fundBalances)
+
+
+
+
 
 
