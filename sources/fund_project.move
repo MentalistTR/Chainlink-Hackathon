@@ -60,10 +60,10 @@ module fund::fund_project {
     /// 
     /// * `shareholder` - Address of shareholder
     /// * `share_percentage` percentage of distribution amount 
-    struct ShareHoldersNew has drop {
-        shareholder: address,
-        share_percentage: u64,
-    }
+    // struct ShareHoldersNew has drop {
+    //     shareholder: address,
+    //     share_percentage: u64,
+    // }
    // =================== Initializer ===================
 
     fun init(ctx:&mut TxContext) {
@@ -214,9 +214,11 @@ module fund::fund_project {
     /// 
     /// * `shareholder` - Defines the shareholders in a vector.
  
-    public fun set_shareholders(_: &AdminCap, receipt:&mut ShareHolders, shareholder:vector<ShareHoldersNew>) {
+    public fun set_shareholders(_: &AdminCap, receipt:&mut ShareHolders, shareholder_address:vector<address>, shareholder_percentage:vector<u64>) {
         // check input length >= 2 
-        assert!(vector::length(&shareholder) >= 2, ERROR_INVALID_ARRAY_LENGTH);
+        assert!((vector::length(&shareholder_address) >= 2 && 
+        vector::length(&shareholder_address) == vector::length(&shareholder_percentage)), 
+        ERROR_INVALID_ARRAY_LENGTH);
         // check percentange sum must be equal to 100 
         let percentage_sum:u64 = 0;
 
@@ -226,14 +228,15 @@ module fund::fund_project {
             table::remove(&mut receipt.shareholders_percentage, shareholder_address);
         };
          // add shareholders to table. 
-        while(!vector::is_empty(&shareholder)) {
-            let share_holder = vector::pop_back(&mut shareholder); 
+        while(!vector::is_empty(&shareholder_address)) {
+            let shareholder_address = vector::pop_back(&mut shareholder_address); 
+            let shareholder_percentage = vector::pop_back(&mut shareholder_percentage);
             // add new shareholders to old_shareholders vector. 
-            vector::push_back(&mut receipt.old_shareholders, share_holder.shareholder);   
+            vector::push_back(&mut receipt.old_shareholders, shareholder_address);   
             // add table to new shareholders and theirs percentange
-            table::add(&mut receipt.shareholders_percentage, share_holder.shareholder , share_holder.share_percentage);
+            table::add(&mut receipt.shareholders_percentage, shareholder_address , shareholder_percentage);
              // sum percentage
-            percentage_sum = percentage_sum + share_holder.share_percentage;
+            percentage_sum = percentage_sum + shareholder_percentage;
 
         };
             // check percentage is equal to 100.
@@ -249,9 +252,9 @@ module fund::fund_project {
         }
 
          // create a shareholder
-        public fun create_shareholdernew(shareholder: address, share_percentage: u64): ShareHoldersNew {
-            ShareHoldersNew { shareholder, share_percentage}
-        }
+        // public fun create_shareholdernew(shareholder: address, share_percentage: u64): ShareHoldersNew {
+        //     ShareHoldersNew { shareholder, share_percentage}
+        // }
 
         // return shareholder percentange u64.
         public fun return_shareholder_percentage(sh:&ShareHolders,recipient:address): u64  {

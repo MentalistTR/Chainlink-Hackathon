@@ -63,14 +63,14 @@ export const SetShareHolders = async () => {
         share_percentage: 30
     }
 
-    const shareholdersVec = setshareholders.makeMoveVec({ objects: [user1, user2, user3]})
- 
+    const shareholdersVec = setshareholders.makeMoveVec({ objects: [setshareholders.object(user1), setshareholders.object(user2), setshareholders.object(user3)]});
+    console.log("admin set shareholders...")
+
     setshareholders.moveCall({
         target: `${packageId}::fund_project::set_shareholders`,
         arguments: [setshareholders.object(admincap), setshareholders.object(shareholders), shareholdersVec]
     });
 
-    console.log("admin set shareholders...")
 
     const read_result = await client.devInspectTransactionBlock({
         sender: keypair.toSuiAddress(),
