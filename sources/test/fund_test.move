@@ -13,7 +13,7 @@ module fund::fund_test {
     use std::string::{Self,String};
 
     use fund::fund_project as fp;
-    use fund::fund_project::{Fund_Balances,AdminCap,ShareHolders,ShareHoldersNew,create_shareholdernew,};
+    use fund::fund_project::{Fund_Balances,AdminCap,ShareHolders};
     use fund::usdc::{init_for_testing_usdc, USDC};
     use fund::usdt::{init_for_testing_usdt, USDT};
     use fund::helpers::{add_share_holders, users_deposit_token, users_deposit_sui, admin_distribute_funds_usdc, 
@@ -46,15 +46,16 @@ fun admin_decide_shareholders_percentage() {
      let shared_ShareHolders_ref = &mut shared_ShareHolders; 
      let admin_cap = ts::take_from_sender<AdminCap>(scenario);
    
-     let shareholder_vector  = vector::empty<ShareHoldersNew>();
+     let shareholder_address_vector  = vector::empty();   
+     let shareholder_percentage_vector = vector::empty(); 
      
-     let user1 = create_shareholdernew(test_address1, 5000);
-     let user2 = create_shareholdernew(test_address2, 5000);
-      
-     vector::push_back(&mut shareholder_vector, user1);
-     vector::push_back(&mut shareholder_vector, user2);
+     vector::push_back(&mut shareholder_address_vector, test_address1);
+     vector::push_back(&mut shareholder_address_vector, test_address2); 
+     
+     vector::push_back(&mut shareholder_percentage_vector, 5000);
+     vector::push_back(&mut shareholder_percentage_vector, 5000);
 
-     fp::set_shareholders(&admin_cap, shared_ShareHolders_ref, shareholder_vector);
+     fp::set_shareholders(&admin_cap, shared_ShareHolders_ref, shareholder_address_vector, shareholder_percentage_vector);      
  
       ts::return_shared(shared_ShareHolders);
       ts::return_to_sender(scenario,admin_cap);
@@ -79,20 +80,22 @@ fun admin_decide_shareholders_percentage() {
      let shared_ShareHolders = ts::take_shared<ShareHolders>(scenario);
      let shared_ShareHolders_ref = &mut shared_ShareHolders; 
      let admin_cap = ts::take_from_sender<AdminCap>(scenario);
+
+     let shareholder_address_vector  = vector::empty();   
+     let shareholder_percentage_vector = vector::empty(); 
    
-     let shareholder_vector  = vector::empty<ShareHoldersNew>();
+     vector::push_back(&mut shareholder_address_vector, test_address1);
+     vector::push_back(&mut shareholder_address_vector, test_address2);
+     vector::push_back(&mut shareholder_address_vector, test_address3); 
+     vector::push_back(&mut shareholder_address_vector, test_address4);  
      
-     let user1 = create_shareholdernew(test_address1, 2500);
-     let user2 = create_shareholdernew(test_address2, 2500);
-     let user3 = create_shareholdernew(test_address3, 2500);
-     let user4 = create_shareholdernew(test_address4, 2500);
+     vector::push_back(&mut shareholder_percentage_vector, 2500);
+     vector::push_back(&mut shareholder_percentage_vector, 2500);
+     vector::push_back(&mut shareholder_percentage_vector, 2500);
+     vector::push_back(&mut shareholder_percentage_vector, 2500);
       
-     vector::push_back(&mut shareholder_vector, user1);
-     vector::push_back(&mut shareholder_vector, user2);
-     vector::push_back(&mut shareholder_vector, user3);
-     vector::push_back(&mut shareholder_vector, user4);
- 
-     fp::set_shareholders(&admin_cap, shared_ShareHolders_ref, shareholder_vector);
+    
+     fp::set_shareholders(&admin_cap, shared_ShareHolders_ref, shareholder_address_vector, shareholder_percentage_vector);      
 
      ts::return_shared(shared_ShareHolders);
      ts::return_to_sender(scenario,admin_cap);
@@ -122,17 +125,22 @@ fun admin_decide_shareholders_percentage() {
      let shared_ShareHolders_ref = &mut shared_ShareHolders; 
      let admin_cap = ts::take_from_sender<AdminCap>(scenario);
    
-     let shareholder_vector  = vector::empty<ShareHoldersNew>();
      
-     let user1 = create_shareholdernew(test_address1, 3000);
-     let user2 = create_shareholdernew(test_address2, 3000);
-     let user3 = create_shareholdernew(test_address3, 4000);
-    
-     vector::push_back(&mut shareholder_vector, user1);
-     vector::push_back(&mut shareholder_vector, user2);
-     vector::push_back(&mut shareholder_vector, user3);
+     let shareholder_address_vector  = vector::empty();   
+     let shareholder_percentage_vector = vector::empty(); 
    
-     fp::set_shareholders(&admin_cap, shared_ShareHolders_ref, shareholder_vector);
+     vector::push_back(&mut shareholder_address_vector, test_address1);
+     vector::push_back(&mut shareholder_address_vector, test_address2);
+     vector::push_back(&mut shareholder_address_vector, test_address3); 
+ 
+     
+     vector::push_back(&mut shareholder_percentage_vector, 3000);
+     vector::push_back(&mut shareholder_percentage_vector, 3000);
+     vector::push_back(&mut shareholder_percentage_vector, 4000);
+     
+      
+    
+     fp::set_shareholders(&admin_cap, shared_ShareHolders_ref, shareholder_address_vector, shareholder_percentage_vector); 
      
      ts::return_shared(shared_ShareHolders);
      ts::return_to_sender(scenario,admin_cap);
@@ -846,14 +854,16 @@ fun shareholder_withdraw_fund() {
       let shared_ShareHolders = ts::take_shared<ShareHolders>(scenario);
       let shared_ShareHolders_ref = &mut shared_ShareHolders; 
       let admin_cap = ts::take_from_sender<AdminCap>(scenario);
-      let shareholder_vector  = vector::empty<ShareHoldersNew>(); 
+     
       let perc1:u64 = 1000;    
-      let user1 = create_shareholdernew(test_address1, perc1);
-   
+      let shareholder_address_vector  = vector::empty();   
+      let shareholder_percentage_vector = vector::empty(); 
+     
+     vector::push_back(&mut shareholder_address_vector, test_address1);
+     vector::push_back(&mut shareholder_percentage_vector, 5000);
+  
 
-       vector::push_back(&mut shareholder_vector, user1);
- 
-       fp::set_shareholders(&admin_cap, shared_ShareHolders_ref, shareholder_vector);      
+     fp::set_shareholders(&admin_cap, shared_ShareHolders_ref, shareholder_address_vector, shareholder_percentage_vector);    
        ts::return_shared(shared_ShareHolders);
        ts::return_to_sender(scenario,admin_cap);  
  

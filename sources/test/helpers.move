@@ -3,7 +3,7 @@ module fund::helpers {
 
     use sui::test_scenario::{Self as ts, next_tx,Scenario};
     use fund::fund_project as fp;
-    use fund::fund_project::{Fund_Balances,AdminCap,ShareHolders,ShareHoldersNew,create_shareholdernew,};
+    use fund::fund_project::{Fund_Balances,AdminCap,ShareHolders};
     use fund::usdc::{init_for_testing_usdc, USDC};
     use fund::usdt::{init_for_testing_usdt, USDT};
     use sui::coin::{Self, Coin, mint_for_testing, CoinMetadata};
@@ -31,18 +31,20 @@ module fund::helpers {
        let shared_ShareHolders_ref = &mut shared_ShareHolders; 
        let admin_cap = ts::take_from_sender<AdminCap>(ts);
        
-       let shareholder_vector  = vector::empty<ShareHoldersNew>();     
-       let user1 = create_shareholdernew(test_address1, perc1);
-       let user2 = create_shareholdernew(test_address2, perc2);
-       let user3 = create_shareholdernew(test_address3, perc3);
-       let user4 = create_shareholdernew(test_address4, perc4);    
+       let shareholder_address_vector  = vector::empty();   
+       let shareholder_percentage_vector = vector::empty(); 
 
-       vector::push_back(&mut shareholder_vector, user1);
-       vector::push_back(&mut shareholder_vector, user2);
-       vector::push_back(&mut shareholder_vector, user3);
-       vector::push_back(&mut shareholder_vector, user4);   
+       vector::push_back(&mut shareholder_address_vector, test_address1);
+       vector::push_back(&mut shareholder_address_vector, test_address2); 
+       vector::push_back(&mut shareholder_address_vector, test_address3); 
+       vector::push_back(&mut shareholder_address_vector, test_address4);  
 
-       fp::set_shareholders(&admin_cap, shared_ShareHolders_ref, shareholder_vector);      
+       vector::push_back(&mut shareholder_percentage_vector, perc1);
+       vector::push_back(&mut shareholder_percentage_vector, perc2);
+       vector::push_back(&mut shareholder_percentage_vector, perc3);
+       vector::push_back(&mut shareholder_percentage_vector, perc4);
+
+       fp::set_shareholders(&admin_cap, shared_ShareHolders_ref, shareholder_address_vector, shareholder_percentage_vector);      
        ts::return_shared(shared_ShareHolders);
        ts::return_to_sender(ts,admin_cap);     
       };
