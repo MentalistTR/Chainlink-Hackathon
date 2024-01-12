@@ -156,6 +156,46 @@ export const ShareholderWithdraw = async () => {
     console.log(objectChanges);
 }
 
+export const AdminWithdraw = async () => {
+    
+    const keypair = keyPair1()
+    const client = new SuiClient({ url: getFullnodeUrl('testnet') });
+    const txb = new TransactionBlock;
+   
+
+    console.log("admin withdraw USDC...");
+
+    txb.moveCall({
+        target: `${packageId}::fund_project::admin_withdraw`,
+        arguments:[
+         txb.object(admincap),
+         txb.object(fundBalances),
+         txb.pure(1000000000),
+         txb.pure("usdc"),
+        ],
+        typeArguments: [data.usdc.USDCcointype]
+    })
+
+    const {objectChanges, balanceChanges}= await client.signAndExecuteTransactionBlock({
+        signer: keypair,
+        transactionBlock: txb,
+        options: {
+        showObjectChanges: true,
+        showEffects: true,
+        showEvents: true,
+        showInput: false,
+        showRawInput: false
+    }
+    })
+ 
+    if (!objectChanges) {
+        console.log("Error: object  Changes was undefined")
+        process.exit(1)
+    }
+
+    console.log(objectChanges);
+}
+
 
 
 
@@ -167,7 +207,9 @@ export const ShareholderWithdraw = async () => {
 
  //await FundDistribution()
 
- await ShareholderWithdraw() 
+ // await ShareholderWithdraw() 
+
+ await AdminWithdraw()
 
 
 

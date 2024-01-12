@@ -17,11 +17,10 @@ if (!privkey) {
     process.exit(1)
 }
 const keypair = Ed25519Keypair.fromSecretKey(fromB64(privkey).slice(1))
-console.log(keypair)
 return keypair
 
 }
-keyPair1()
+
 
 
 
