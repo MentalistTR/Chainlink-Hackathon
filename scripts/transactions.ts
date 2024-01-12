@@ -2,6 +2,7 @@ import { SuiClient, getFullnodeUrl } from '@mysten/sui.js/client';
 import { TransactionBlock } from '@mysten/sui.js/transactions';
 import { keyPair1, parse_amount, find_one_by_type} from './helper'
 import data from './deployed_objects.json';
+import { Ed25519Keypair } from '@mysten/sui.js/keypairs/ed25519';
 
 
 const packageId = data.packageId;
@@ -81,7 +82,8 @@ export const FundDistribution= async () => {
 
     txb.moveCall({
         target: `${packageId}::fund_project::fund_distribution`,
-        arguments:[txb.object(admincap),
+        arguments:[
+        txb.object(admincap),
         txb.object(fundBalances),
         txb.object(shareholders),
         txb.pure(1000),
@@ -113,9 +115,45 @@ export const FundDistribution= async () => {
 
     console.log(objectChanges);
     // console.log(balanceChanges)
+}
 
+export const ShareholderWithdraw = async () => {
+    
+    const shareholder1PrivateKey = 'mass orange battle hurt picnic brain glove syrup sting intact weather rural';
+    const client = new SuiClient({ url: getFullnodeUrl('testnet') });
+    const txb = new TransactionBlock;
+    const keypair =  Ed25519Keypair.deriveKeypair(shareholder1PrivateKey);
 
+    console.log("shareholder1 withdraw USDC...");
 
+    txb.moveCall({
+        target: `${packageId}::fund_project::shareholder_withdraw`,
+        arguments:[
+         txb.object(shareholders),
+         txb.pure(100),
+         txb.pure("usdc"),
+        ],
+        typeArguments: [data.usdc.USDCcointype]
+    })
+
+    const {objectChanges, balanceChanges}= await client.signAndExecuteTransactionBlock({
+        signer: keypair,
+        transactionBlock: txb,
+        options: {
+        showObjectChanges: true,
+        showEffects: true,
+        showEvents: true,
+        showInput: false,
+        showRawInput: false
+    }
+    })
+ 
+    if (!objectChanges) {
+        console.log("Error: object  Changes was undefined")
+        process.exit(1)
+    }
+
+    console.log(objectChanges);
 }
 
 
@@ -127,7 +165,9 @@ export const FundDistribution= async () => {
 
  //await SetShareHolders();
 
- await FundDistribution()
+ //await FundDistribution()
+
+ await ShareholderWithdraw() 
 
 
 

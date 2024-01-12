@@ -17,9 +17,13 @@ if (!privkey) {
     process.exit(1)
 }
 const keypair = Ed25519Keypair.fromSecretKey(fromB64(privkey).slice(1))
+console.log(keypair)
 return keypair
 
 }
+keyPair1()
+
+
 
 export const parse_amount = (amount: string) => {
     return parseInt(amount) / 1_000_000_000
