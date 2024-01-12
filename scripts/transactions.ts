@@ -71,11 +71,63 @@ export const SetShareHolders = async () => {
 
 }
 
+export const FundDistribution= async () => {
+
+    const keypair = keyPair1()
+    const client = new SuiClient({ url: getFullnodeUrl('testnet') });
+    const txb = new TransactionBlock
+
+    console.log("admin distribution funds...")
+
+    txb.moveCall({
+        target: `${packageId}::fund_project::fund_distribution`,
+        arguments:[txb.object(admincap),
+        txb.object(fundBalances),
+        txb.object(shareholders),
+        txb.pure(1000),
+        txb.pure("usdc")    
+        ],
+        typeArguments: [data.usdc.USDCcointype]
+    })
+
+    const {objectChanges, balanceChanges}= await client.signAndExecuteTransactionBlock({
+        signer: keypair,
+        transactionBlock: txb,
+        options: {
+        showObjectChanges: true,
+        showEffects: true,
+        showEvents: true,
+        showInput: false,
+        showRawInput: false
+    }
+    })
+    // if (!balanceChanges) {
+    //     console.log("Error: Balance Changes was undefined")
+    //     process.exit(1)
+    // }
+    
+    if (!objectChanges) {
+        console.log("Error: object  Changes was undefined")
+        process.exit(1)
+    }
+
+    console.log(objectChanges);
+    // console.log(balanceChanges)
+
+
+
+}
+
+
+
+
+
 
  //DepositSuiBag(packageId, fundBalances)
 
- await SetShareHolders();
+ //await SetShareHolders();
 
+ await FundDistribution()
 
 
 

@@ -78,18 +78,17 @@ deposit_usdc_bag.moveCall({
 
 console.log("User1 getting deposit usdc...") 
 
-const read_result = await client.devInspectTransactionBlock({
-    sender: keypair.toSuiAddress(),
+const read_result = await client.signAndExecuteTransactionBlock({
+    signer: keypair,
     transactionBlock: deposit_usdc_bag
 })
 
-const return_values = read_result?.results?.[0].returnValues
-if (!return_values) {
-    console.log("Error: Return Values not found")
-    process.exit(1)
-}
-
-console.log(return_values)
+const {objectChanges}= await client.signAndExecuteTransactionBlock({
+  signer: keypair,
+  transactionBlock: deposit_usdc_bag,
+  options: {showObjectChanges: true}
+})
+console.log(objectChanges);
 }
 
 await DepositAnyToken(packageId, fundBalances );

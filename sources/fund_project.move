@@ -169,7 +169,8 @@ module fund::fund_project {
     /// * `distribution_amount` - Defines the distribute tokens amount  
     /// * `coin_name - Defines the distribute token name in String type. 
     
-    public fun fund_distribution<T>(_:&AdminCap,
+    public fun fund_distribution<T>(
+      _:&AdminCap,
       fund:&mut Fund_Balances,
       shareholder:&mut ShareHolders,
       distribution_amount: u64,
