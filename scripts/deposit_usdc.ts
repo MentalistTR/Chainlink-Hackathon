@@ -19,7 +19,7 @@ const toAppBase = function(obj:any) {
 
 async function getCoinWithAmount(txb:any, amount:string, client:any){
     const coins = await client.getCoins({
-      owner: "0xc14f2502f48f29599cc94eb0f8c6037fee028fede1dc7dcccea56c6c6e9d20ce",
+      owner: "0x7ea139cbf7c44b8477d56d087f4475fe599e492958bf1175bb54aedd9fc99d8e",
       coinType:usdc_cointype 
     })
 
@@ -65,7 +65,7 @@ const DepositAnyToken = async (packageId: string, fund_balances_id: string) => {
 const deposit_usdc_bag= new TransactionBlock
 const keypair = keyPair1();
 const client = new SuiClient({ url: getFullnodeUrl('testnet') });
-const usdc_cointype = deposit_usdc_bag.object("0x3f26406ff0bb260bf08aab81502cac391a307bb006d11e88fa5b05bdaaa5d8f0")
+const usdc_cointype = deposit_usdc_bag.object("0x121239dcfc391662f2918ccae024bda371a1ed92109705ff2ea6f69005525b52")
 const usdc_amount =  await getCoinWithAmount(deposit_usdc_bag, "1000000000", client);
 
 console.log(usdc_amount)
