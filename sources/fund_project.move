@@ -22,6 +22,7 @@ module fund::fund_project {
     const ERROR_INVALID_ARRAY_LENGTH: u64 = 0;
     const ERROR_INVALID_PERCENTAGE_SUM: u64 = 1;
     const ERROR_YOU_ARE_NOT_SHAREHOLDER:u64 =2;
+    const ERROR_FUNCTION_DISABLED:u64 = 3;
   
  
 
@@ -38,7 +39,7 @@ module fund::fund_project {
     // only admin  
     struct AdminCap has key {
         id:UID,
-        shareholders_created:bool,
+        pausable:bool,
     }
 
     /// We will keep the percentages and balances of ShareHolders here.
@@ -85,7 +86,7 @@ module fund::fund_project {
         );
        // Admin capability object for the stable coin
         transfer::transfer(AdminCap 
-        { id: object::new(ctx), shareholders_created:false}, tx_context::sender(ctx) );
+        { id: object::new(ctx), pausable:false}, tx_context::sender(ctx) );
     }
        
      /// People can deposit funds any token to fund.
@@ -215,11 +216,13 @@ module fund::fund_project {
     /// 
     /// * `shareholder` - Defines the shareholders in a vector.
  
-    public fun set_shareholders(_: &AdminCap, receipt:&mut ShareHolders, shareholder_address:vector<address>, shareholder_percentage:vector<u64>) {
+    public fun set_shareholders(admin_cap: &AdminCap, receipt:&mut ShareHolders, shareholder_address:vector<address>, shareholder_percentage:vector<u64>) {
         // check input length >= 2 
         assert!((vector::length(&shareholder_address) >= 2 && 
         vector::length(&shareholder_address) == vector::length(&shareholder_percentage)), 
         ERROR_INVALID_ARRAY_LENGTH);
+        // check admincap.pausable is equal to false ? 
+        assert!(admin_cap.pausable == false, ERROR_FUNCTION_DISABLED);
         // check percentange sum must be equal to 100 
         let percentage_sum:u64 = 0;
 
@@ -242,6 +245,16 @@ module fund::fund_project {
         };
             // check percentage is equal to 100.
             assert!(percentage_sum == 10000, ERROR_INVALID_PERCENTAGE_SUM);
+    }
+
+    // This function is for contract security 
+
+    public entry fun pause_set_shareholder (admin_cap: &mut AdminCap) {
+        if(admin_cap.pausable == false) {
+            admin_cap.pausable = true 
+        } else {
+            admin_cap.pausable = false
+        }
     }
     
     // We will use this functions in test.
