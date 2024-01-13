@@ -929,7 +929,7 @@ fun shareholder_withdraw_fund() {
 
      ts::end(scenario_test);  
     }
-
+   // admin pause to set_shareholder so that function must be disabled. We are expecting an Error
     #[test]
     #[expected_failure(abort_code = fp::ERROR_FUNCTION_DISABLED)]
 
@@ -964,6 +964,7 @@ fun shareholder_withdraw_fund() {
     }
     
      // admin pause to set_shareholder function 2 times. So it must work now. 
+   #[test]
       fun test_pausable_shareholder2() {
 
       let owner: address = @0xA;

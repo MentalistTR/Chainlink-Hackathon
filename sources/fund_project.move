@@ -250,11 +250,7 @@ module fund::fund_project {
     // This function is for contract security 
 
     public entry fun pause_set_shareholder (admin_cap: &mut AdminCap) {
-        if(admin_cap.pausable == false) {
-            admin_cap.pausable = true 
-        } else {
-            admin_cap.pausable = false
-        }
+        admin_cap.pausable = !admin_cap.pausable
     }
     
     // We will use this functions in test.
