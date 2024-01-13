@@ -962,5 +962,43 @@ fun shareholder_withdraw_fund() {
 
       ts::end(scenario_test);  
     }
+    
+     // admin pause to set_shareholder function 2 times. So it must work now. 
+      fun test_pausable_shareholder2() {
+
+      let owner: address = @0xA;
+      let test_address1: address = @0xB;
+      let test_address2: address = @0xF;
+
+      let scenario_test = ts::begin(owner);
+      let scenario = &mut scenario_test;
+
+      before_shareholder_withdraw(scenario, 5000, 2000, 1000, 2000); 
+
+      next_tx(scenario, owner);
+      {
+       let admin_cap = ts::take_from_sender<AdminCap>(scenario);
+
+       fp::pause_set_shareholder(&mut admin_cap);
+
+       ts::return_to_sender(scenario, admin_cap)
+      };
+      
+      next_tx(scenario, owner);
+      {
+       let admin_cap = ts::take_from_sender<AdminCap>(scenario);
+
+       fp::pause_set_shareholder(&mut admin_cap);
+
+       ts::return_to_sender(scenario, admin_cap)
+      };
+
+      next_tx(scenario, owner);
+      {
+      add_share_holders(scenario, 5000, 2000, 2000, 1000);
+      };
+
+      ts::end(scenario_test);  
+    }
 
 }
